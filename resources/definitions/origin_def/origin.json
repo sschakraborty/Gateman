@@ -1,0 +1,20 @@
+{
+    "origin_id": "RFX829635",
+    "origin_name": "Sample Origin",
+    "origin_desc": "Some nice origin description that can be pretty long",
+    "specification": {
+        "rate_limiter": {
+            "algorithm": "TOKEN_BUCKET",
+            "time_unit": "MIN",
+            "req_per_time_unit": 200
+        },
+        "servers": [
+            {
+                "hostname": "localhost",
+                "port": 80,
+                "secure": true,
+                "verify_cert": false
+            }
+        ]
+    }
+}

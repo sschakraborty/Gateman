@@ -1,0 +1,23 @@
+{
+    "api_id": "",
+    "api_name": "Sample API",
+    "api_version": "0.1.0",
+    "api_desc": "Some nice description of this beautiful API",
+    "specification": {
+        "methods": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "OPTION"
+        ],
+        "paths": [
+            "/some/**/path/*/with/meaning",
+            "/some/other/**/path/*/with/**/meaning"
+        ],
+        "hostnames": [
+            "*.example.com"
+        ]
+    },
+    "origin_id": "RFX829635"
+}
