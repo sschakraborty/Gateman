@@ -37,7 +37,8 @@ mod test {
     fn test_writing() {
         let test_payload = "Hello World! This is a file write test!".to_string();
         let result = FileWriter::from_path(
-            "/home/sschakraborty/Projects/Gateman/resources/file_utils_test/SampleWrittenFile"
-        ).write(&test_payload);
+            "/home/sschakraborty/Projects/Gateman/resources/file_utils_test/SampleWrittenFile",
+        )
+        .write(&test_payload);
     }
 }
