@@ -12,3 +12,4 @@ buildNumber.properties
 **/.idea/*
 Cargo.lock
 *.iml
+/resources/file_utils_test/SampleWrittenFile
