@@ -15,9 +15,7 @@ impl FileWriter {
         }
     }
     pub(crate) fn write(&self, content: &String) -> Result<(), FileOperationError> {
-        let path = Path::new(self.filepath.as_str());
-        File::create(path);
-        match File::open(path) {
+        match File::create(Path::new(self.filepath.as_str())) {
             Ok(mut file) => {
                 file.write_all(content.as_bytes());
                 Result::Ok(())
@@ -31,14 +29,22 @@ impl FileWriter {
 
 #[cfg(test)]
 mod test {
+    use crate::file_utils::file_reader::FileReader;
     use crate::file_utils::file_writer::FileWriter;
 
     #[test]
     fn test_writing() {
         let test_payload = "Hello World! This is a file write test!".to_string();
-        let result = FileWriter::from_path(
-            "/home/sschakraborty/Projects/Gateman/resources/file_utils_test/SampleWrittenFile",
-        )
-        .write(&test_payload);
+        let filepath = "/home/sschakraborty/Projects/Gateman/resources/file_utils_test/SampleWrittenFile";
+        let result = FileWriter::from_path(filepath).write(&test_payload);
+        let read_result = FileReader::from_path(filepath).read();
+        match read_result {
+            Ok(content) => {
+                assert_eq!(test_payload, content);
+            }
+            Err(_) => {
+                panic!();
+            }
+        }
     }
 }
