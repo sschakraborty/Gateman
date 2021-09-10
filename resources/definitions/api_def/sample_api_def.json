@@ -1,5 +1,5 @@
 {
-    "api_id": "",
+    "api_id": "some_nice_id",
     "api_name": "Sample API",
     "api_version": "0.1.0",
     "api_desc": "Some nice description of this beautiful API",

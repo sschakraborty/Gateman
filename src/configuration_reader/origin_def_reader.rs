@@ -44,10 +44,10 @@ struct Origin {
 
 impl Origin {
     fn from_json_string(json_payload: &String) -> Result<Self, serde_json::Error> {
-        serde_json::from_str::<Origin>(json_payload.as_str())
+        serde_json::from_str::<Self>(json_payload.as_str())
     }
     fn from_json_str_slice(json_payload: &str) -> Result<Self, serde_json::Error> {
-        serde_json::from_str::<Origin>(json_payload)
+        serde_json::from_str::<Self>(json_payload)
     }
     fn to_json(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string(self)
@@ -61,9 +61,7 @@ impl Origin {
 mod test {
     use std::io::Read;
 
-    use crate::configuration_reader::origin_def_reader::{
-        Origin, RateLimiterAlgorithm, TimeUnit,
-    };
+    use crate::configuration_reader::origin_def_reader::{Origin, RateLimiterAlgorithm, TimeUnit};
 
     #[test]
     fn test_deserialize() {
@@ -80,6 +78,28 @@ mod test {
             }
         }
         let origin = Origin::from_json_string(&file_contents).unwrap();
+        assert_eq!("RFX829635", origin.origin_id);
+        assert_eq!("Sample Origin", origin.origin_name);
+        assert_eq!(
+            "Some nice origin description that can be pretty long",
+            origin.origin_desc
+        );
+        assert_eq!(
+            RateLimiterAlgorithm::TokenBucket,
+            origin.specification.rate_limiter.algorithm
+        );
+        assert_eq!(
+            TimeUnit::Minute,
+            origin.specification.rate_limiter.time_unit
+        );
+        assert_eq!(200, origin.specification.rate_limiter.req_per_time_unit);
+        assert_eq!("localhost", origin.specification.servers[0].hostname);
+        assert_eq!(80, origin.specification.servers[0].port);
+        assert_eq!(true, origin.specification.servers[0].secure);
+        assert_eq!(false, origin.specification.servers[0].verify_cert);
+
+        let json_payload = origin.to_json().unwrap();
+        let origin = Origin::from_json_str_slice(json_payload.as_str()).unwrap();
         assert_eq!("RFX829635", origin.origin_id);
         assert_eq!("Sample Origin", origin.origin_name);
         assert_eq!(
