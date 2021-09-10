@@ -35,7 +35,8 @@ mod test {
     #[test]
     fn test_writing() {
         let test_payload = "Hello World! This is a file write test!".to_string();
-        let filepath = "/home/sschakraborty/Projects/Gateman/resources/file_utils_test/SampleWrittenFile";
+        let filepath =
+            "/home/sschakraborty/Projects/Gateman/resources/file_utils_test/SampleWrittenFile";
         let result = FileWriter::from_path(filepath).write(&test_payload);
         let read_result = FileReader::from_path(filepath).read();
         match read_result {
