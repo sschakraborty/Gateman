@@ -1,6 +1,9 @@
+use crate::core::reverse_proxy::deploy_reverse_proxy;
+
 mod configuration_reader;
+mod core;
 mod file_utils;
 
 fn main() {
-    println!("Hello World!");
+    deploy_reverse_proxy();
 }
