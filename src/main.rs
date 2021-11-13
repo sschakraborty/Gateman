@@ -6,11 +6,21 @@ mod file_utils;
 
 fn main() {
     std::thread::spawn(move || {
-        tokio::runtime::Builder::new_current_thread()
+        match tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .unwrap()
-            .block_on(deploy_mgt_server(8888));
+            .block_on(deploy_mgt_server(8888))
+        {
+            Ok(_) => {
+                println!("Deployed single threaded runtime!");
+                println!("Deployed management server on single threaded runtime!");
+            }
+            Err(e) => {
+                eprintln!("Error while deploying management server - {}", e);
+                panic!();
+            }
+        }
     });
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()

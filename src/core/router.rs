@@ -32,7 +32,7 @@ pub async fn route_mgt_server(request: Request<Body>) -> Result<Response<Body>, 
     }
 }
 
-pub async fn route_at_top_level(request: Request<Body>) -> Result<Response<Body>, Infallible> {
+pub async fn route_proxy_server(request: Request<Body>) -> Result<Response<Body>, Infallible> {
     match (request.method(), request.uri().path()) {
         (_, _) => create_404_not_found_response(),
     }
