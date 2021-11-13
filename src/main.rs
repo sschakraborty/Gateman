@@ -1,3 +1,4 @@
+use crate::core::read_config::{read_all_api_definitions, read_all_origin_definitions};
 use crate::core::reverse_proxy::{deploy_mgt_server, deploy_reverse_proxy};
 
 mod configuration_reader;
@@ -6,6 +7,8 @@ mod file_utils;
 
 #[allow(unused_must_use)]
 fn main() {
+    read_all_api_definitions();
+    read_all_origin_definitions();
     std::thread::spawn(move || {
         match tokio::runtime::Builder::new_current_thread()
             .enable_all()
