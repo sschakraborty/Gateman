@@ -12,7 +12,6 @@ async fn ctrl_c_shutdown_signal() {
         .expect("Failed to install CTRL+C signal handler");
 }
 
-#[tokio::main]
 pub async fn deploy_mgt_server(port: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
     let make_svc_metadata =
@@ -22,12 +21,13 @@ pub async fn deploy_mgt_server(port: u16) -> Result<(), Box<dyn std::error::Erro
     let graceful = server.with_graceful_shutdown(ctrl_c_shutdown_signal());
 
     if let Err(e) = graceful.await {
-        eprintln!("Server error: {}", e);
+        eprintln!("Management server error: {}", e);
+    } else {
+        println!("Management server started on port {}!", port);
     }
     Ok(())
 }
 
-#[tokio::main]
 pub async fn deploy_reverse_proxy(
     port: u16,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -39,7 +39,9 @@ pub async fn deploy_reverse_proxy(
     let graceful = server.with_graceful_shutdown(ctrl_c_shutdown_signal());
 
     if let Err(e) = graceful.await {
-        eprintln!("Server error: {}", e);
+        eprintln!("Proxy server error: {}", e);
+    } else {
+        println!("Proxy server started on port {}", port);
     }
     Ok(())
 }

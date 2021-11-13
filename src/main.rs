@@ -4,8 +4,17 @@ mod configuration_reader;
 mod core;
 mod file_utils;
 
-#[allow(unused_must_use)]
 fn main() {
-    deploy_mgt_server(8888);
-    deploy_reverse_proxy(8080);
+    std::thread::spawn(move || {
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(deploy_mgt_server(8888));
+    });
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(deploy_reverse_proxy(8080));
 }
