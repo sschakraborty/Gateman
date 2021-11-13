@@ -2,26 +2,26 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-enum RateLimiterAlgorithm {
+pub(crate) enum RateLimiterAlgorithm {
     TokenBucket,
     LeakyBucket,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-enum TimeUnit {
+pub(crate) enum TimeUnit {
     Minute,
     Second,
 }
 
 #[derive(Serialize, Deserialize)]
-struct RateLimiterConfig {
+pub(crate) struct RateLimiterConfig {
     algorithm: RateLimiterAlgorithm,
     time_unit: TimeUnit,
     req_per_time_unit: u32,
 }
 
 #[derive(Serialize, Deserialize)]
-struct Server {
+pub(crate) struct Server {
     hostname: String,
     port: u16,
     secure: bool,
@@ -29,13 +29,13 @@ struct Server {
 }
 
 #[derive(Serialize, Deserialize)]
-struct OriginSpecification {
+pub(crate) struct OriginSpecification {
     rate_limiter: RateLimiterConfig,
     servers: Vec<Server>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct Origin {
+pub(crate) struct Origin {
     origin_id: String,
     origin_name: String,
     origin_desc: String,
@@ -43,16 +43,16 @@ struct Origin {
 }
 
 impl Origin {
-    fn from_json_string(json_payload: &String) -> Result<Self, serde_json::Error> {
+    pub(crate) fn from_json_string(json_payload: &String) -> Result<Self, serde_json::Error> {
         serde_json::from_str::<Self>(json_payload.as_str())
     }
-    fn from_json_str_slice(json_payload: &str) -> Result<Self, serde_json::Error> {
+    pub(crate) fn from_json_str_slice(json_payload: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str::<Self>(json_payload)
     }
-    fn to_json(&self) -> Result<String, serde_json::Error> {
+    pub(crate) fn to_json(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string(self)
     }
-    fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
+    pub(crate) fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string_pretty(self)
     }
 }

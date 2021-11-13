@@ -3,6 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::configuration_reader::api_def_reader::APIDefinition;
+use crate::configuration_reader::origin_def_reader::{Origin, OriginSpecification};
 use crate::file_utils::file_reader::FileReader;
 
 fn get_directory_of_executable() -> PathBuf {
@@ -42,10 +43,11 @@ fn read_config_file_paths(current_directory: PathBuf) -> Vec<PathBuf> {
     file_list
 }
 
-pub(crate) fn read_all_config_files() -> Vec<APIDefinition> {
+pub(crate) fn read_all_api_definitions() -> Vec<APIDefinition> {
     let mut api_definitions = vec![];
-    let all_file_paths =
-        read_config_file_paths(get_directory_of_executable().join(Path::new("/config/api_def")));
+    let all_file_paths = read_config_file_paths(
+        get_directory_of_executable().join(Path::new("/config/definitions/api_def")),
+    );
     for path_buffer in all_file_paths {
         match FileReader::from_path(path_buffer.to_str().unwrap()).read() {
             Ok(json_payload) => {
@@ -73,4 +75,38 @@ pub(crate) fn read_all_config_files() -> Vec<APIDefinition> {
         }
     }
     api_definitions
+}
+
+pub(crate) fn read_all_origin_definitions() -> Vec<Origin> {
+    let mut origin_definitions = vec![];
+    let all_file_paths = read_config_file_paths(
+        get_directory_of_executable().join(Path::new("/config/definitions/origin_def")),
+    );
+    for path_buffer in all_file_paths {
+        match FileReader::from_path(path_buffer.to_str().unwrap()).read() {
+            Ok(json_payload) => {
+                let origin_def_read_result = Origin::from_json_string(&json_payload);
+                match origin_def_read_result {
+                    Ok(origin_definition) => {
+                        origin_definitions.push(origin_definition);
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "Failed to parse JSON content in file {} as Origin because {}",
+                            path_buffer.to_str().unwrap(),
+                            e
+                        );
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!(
+                    "Failed to read file at {} because {}!",
+                    path_buffer.to_str().unwrap(),
+                    e.message
+                );
+            }
+        }
+    }
+    origin_definitions
 }

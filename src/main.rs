@@ -4,6 +4,7 @@ mod configuration_reader;
 mod core;
 mod file_utils;
 
+#[allow(unused_must_use)]
 fn main() {
     std::thread::spawn(move || {
         match tokio::runtime::Builder::new_current_thread()
