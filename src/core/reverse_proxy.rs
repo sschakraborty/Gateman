@@ -19,8 +19,14 @@ pub async fn deploy_mgt_server(
     config_mgr_tx: Sender<ConfigMgrProxyAPI>,
 ) -> hyper::Result<()> {
     let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
-    let make_svc_metadata =
-        make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(route_mgt_server)) });
+    let make_svc_metadata = make_service_fn(move |_| {
+        let config_mgr_tx = config_mgr_tx.clone();
+        async move {
+            Ok::<_, Infallible>(service_fn(move |request| {
+                route_mgt_server(request, config_mgr_tx.clone())
+            }))
+        }
+    });
 
     let server = Server::bind(&frontend_server_address).serve(make_svc_metadata);
     let graceful = server.with_graceful_shutdown(ctrl_c_shutdown_signal());
@@ -39,8 +45,14 @@ pub async fn deploy_reverse_proxy(
     config_mgr_tx: Sender<ConfigMgrProxyAPI>,
 ) -> hyper::Result<()> {
     let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
-    let make_svc_metadata =
-        make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(route_proxy_server)) });
+    let make_svc_metadata = make_service_fn(move |_| {
+        let config_mgr_tx = config_mgr_tx.clone();
+        async move {
+            Ok::<_, Infallible>(service_fn(move |request| {
+                route_proxy_server(request, config_mgr_tx.clone())
+            }))
+        }
+    });
 
     let server = Server::bind(&frontend_server_address).serve(make_svc_metadata);
     let graceful = server.with_graceful_shutdown(ctrl_c_shutdown_signal());

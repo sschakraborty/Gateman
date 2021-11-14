@@ -2,6 +2,9 @@ use std::convert::Infallible;
 
 use hyper::header::{HeaderValue, CONTENT_ENCODING, CONTENT_TYPE};
 use hyper::{Body, Method, Request, Response, StatusCode};
+use tokio::sync::mpsc::Sender;
+
+use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
 
 fn create_404_not_found_response() -> Result<Response<Body>, Infallible> {
     let response = Response::new("404 Not Found".into());
@@ -17,7 +20,10 @@ fn create_404_not_found_response() -> Result<Response<Body>, Infallible> {
     Ok(Response::from_parts(parts, body))
 }
 
-pub async fn route_mgt_server(request: Request<Body>) -> Result<Response<Body>, Infallible> {
+pub async fn route_mgt_server(
+    request: Request<Body>,
+    _sender: Sender<ConfigMgrProxyAPI>,
+) -> Result<Response<Body>, Infallible> {
     match (request.method(), request.uri().path()) {
         (&Method::GET, "/status") => {
             let response = Response::new("{\n    \"status\": \"healthy\"\n}".into());
@@ -31,7 +37,10 @@ pub async fn route_mgt_server(request: Request<Body>) -> Result<Response<Body>, 
     }
 }
 
-pub async fn route_proxy_server(request: Request<Body>) -> Result<Response<Body>, Infallible> {
+pub async fn route_proxy_server(
+    request: Request<Body>,
+    _sender: Sender<ConfigMgrProxyAPI>,
+) -> Result<Response<Body>, Infallible> {
     match (request.method(), request.uri().path()) {
         (_, _) => create_404_not_found_response(),
     }
