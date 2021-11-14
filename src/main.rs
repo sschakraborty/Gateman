@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use crate::core::reverse_proxy::{deploy_mgt_server, deploy_reverse_proxy};
 
 mod configuration_reader;
