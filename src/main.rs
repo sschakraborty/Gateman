@@ -11,6 +11,7 @@ fn main() {
         .build()
         .unwrap()
         .block_on(async {
+            let (tx, mut rx) = tokio::sync::mpsc::channel::<String>(32);
             tokio::join!(
                 tokio::spawn(deploy_mgt_server(8888)),
                 tokio::spawn(deploy_reverse_proxy(8080))

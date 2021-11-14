@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct APISpecification {
+pub struct APISpecification {
     methods: Vec<String>,
     paths: Vec<String>,
     hostnames: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct APIDefinition {
+pub struct APIDefinition {
     api_id: String,
     api_name: String,
     api_version: String,
@@ -18,16 +18,16 @@ pub(crate) struct APIDefinition {
 }
 
 impl APIDefinition {
-    pub(crate) fn from_json_string(json_payload: &String) -> Result<Self, serde_json::Error> {
+    pub fn from_json_string(json_payload: &String) -> Result<Self, serde_json::Error> {
         serde_json::from_str::<Self>(json_payload.as_str())
     }
-    pub(crate) fn from_json_str_slice(json_payload: &str) -> Result<Self, serde_json::Error> {
+    pub fn from_json_str_slice(json_payload: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str::<Self>(json_payload)
     }
-    pub(crate) fn to_json(&self) -> Result<String, serde_json::Error> {
+    pub fn to_json(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string(self)
     }
-    pub(crate) fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
+    pub fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string_pretty(self)
     }
 }

@@ -43,7 +43,7 @@ fn read_config_file_paths(current_directory: PathBuf) -> Vec<PathBuf> {
     file_list
 }
 
-pub(crate) fn read_all_api_definitions() -> Vec<APIDefinition> {
+pub fn read_all_api_definitions() -> Vec<APIDefinition> {
     let mut api_definitions = vec![];
     let all_file_paths = read_config_file_paths(
         get_directory_of_executable().join(Path::new("config/definitions/api_def")),
@@ -77,7 +77,7 @@ pub(crate) fn read_all_api_definitions() -> Vec<APIDefinition> {
     api_definitions
 }
 
-pub(crate) fn read_all_origin_definitions() -> Vec<Origin> {
+pub fn read_all_origin_definitions() -> Vec<Origin> {
     let mut origin_definitions = vec![];
     let all_file_paths = read_config_file_paths(
         get_directory_of_executable().join(Path::new("config/definitions/origin_def")),
