@@ -3,7 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::configuration_reader::api_def_reader::APIDefinition;
-use crate::configuration_reader::origin_def_reader::{Origin, OriginSpecification};
+use crate::configuration_reader::origin_def_reader::Origin;
 use crate::file_utils::file_reader::FileReader;
 
 fn get_directory_of_executable() -> PathBuf {
