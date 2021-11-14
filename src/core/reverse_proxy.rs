@@ -3,8 +3,10 @@ use std::net::SocketAddr;
 
 use hyper::service::{make_service_fn, service_fn};
 use hyper::Server;
+use tokio::sync::mpsc::Sender;
 
 use crate::core::router::{route_mgt_server, route_proxy_server};
+use crate::ConfigMgrProxyAPI;
 
 async fn ctrl_c_shutdown_signal() {
     tokio::signal::ctrl_c()
@@ -12,7 +14,10 @@ async fn ctrl_c_shutdown_signal() {
         .expect("Failed to install CTRL+C signal handler");
 }
 
-pub async fn deploy_mgt_server(port: u16) -> hyper::Result<()> {
+pub async fn deploy_mgt_server(
+    port: u16,
+    config_mgr_tx: Sender<ConfigMgrProxyAPI>,
+) -> hyper::Result<()> {
     let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
     let make_svc_metadata =
         make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(route_mgt_server)) });
@@ -29,7 +34,10 @@ pub async fn deploy_mgt_server(port: u16) -> hyper::Result<()> {
     result
 }
 
-pub async fn deploy_reverse_proxy(port: u16) -> hyper::Result<()> {
+pub async fn deploy_reverse_proxy(
+    port: u16,
+    config_mgr_tx: Sender<ConfigMgrProxyAPI>,
+) -> hyper::Result<()> {
     let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
     let make_svc_metadata =
         make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(route_proxy_server)) });
