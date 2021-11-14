@@ -1,11 +1,14 @@
+use tokio::sync::oneshot::Sender;
+
+use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
+
 pub enum ConfigMgrProxyAPI {
-    GetOrigin {
-        key: String,
-        // resp: Responder<Option<Bytes>>,
+    GetAPIDefinitionBySpecification {
+        specification: APISpecification,
+        responder: Sender<Option<APIDefinition>>,
     },
-    GetAPIDefinition {
-        key: String,
-        // val: Bytes,
-        // resp: Responder<()>,
+    GetAPIDefinitionByID {
+        api_id: String,
+        responder: Sender<Option<APIDefinition>>,
     },
 }
