@@ -2,9 +2,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct APISpecification {
-    methods: Vec<String>,
-    paths: Vec<String>,
-    hostnames: Vec<String>,
+    pub(crate) methods: Vec<String>,
+    pub(crate) paths: Vec<String>,
+    pub(crate) hostnames: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]
