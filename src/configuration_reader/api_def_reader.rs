@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct APISpecification {
     pub(crate) methods: Vec<String>,
     pub(crate) paths: Vec<String>,
     pub(crate) hostnames: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct APIDefinition {
     api_id: String,
     api_name: String,

@@ -64,8 +64,11 @@ fn get_api_def_by_specification(
     if matching_hostname_api_def_vec.is_empty() {
         responder.send(Option::None);
     } else {
-        // Todo: Implement the proper responder
-        responder.send(Option::None);
+        responder.send(
+            matching_hostname_api_def_vec
+                .pop()
+                .map(|def_ref| def_ref.clone()),
+        );
     }
 }
 
