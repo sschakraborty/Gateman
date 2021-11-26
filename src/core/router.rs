@@ -5,6 +5,7 @@ use hyper::{Body, Method, Request, Response, StatusCode};
 use tokio::sync::mpsc::Sender;
 
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
+use crate::configuration_reader::origin_def_reader::Origin;
 use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
 use crate::ConfigMgrProxyAPI::{GetAPIDefinitionBySpecification, GetOriginDefinitionByID};
 
@@ -104,7 +105,7 @@ pub async fn route_proxy_server(
                     Ok(result) => match result {
                         None => create_503_service_unavailable_response(),
                         Some(origin_definition) => {
-                            Ok(Response::new(Body::from("Found API and origin defs!")))
+                            process_request_to_origin(api_definition, origin_definition, request)
                         }
                     },
                     Err(_) => create_500_int_error_response(),
@@ -113,4 +114,12 @@ pub async fn route_proxy_server(
         },
         Err(_) => create_500_int_error_response(),
     }
+}
+
+async fn process_request_to_origin(
+    _api_definition: APIDefinition,
+    _origin_definition: Origin,
+    _request: Request<Body>,
+) -> Result<Response<Body>, Infallible> {
+    Ok(Response::new(Body::from("Found API and origin defs!")))
 }
