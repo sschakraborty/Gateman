@@ -1,58 +1,19 @@
 use std::convert::Infallible;
 use std::time::Duration;
 
-use hyper::header::{HeaderValue, CONTENT_ENCODING, CONTENT_TYPE};
 use hyper::{Body, Client, Method, Request, Response, StatusCode, Uri};
+use hyper::header::{CONTENT_ENCODING, CONTENT_TYPE, HeaderValue};
 use rand::Rng;
 use tokio::sync::mpsc::Sender;
 use tokio::time::timeout;
 
+use crate::ConfigMgrProxyAPI::{GetAPIDefinitionBySpecification, GetOriginDefinitionByID};
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
 use crate::configuration_reader::origin_def_reader::{Origin, Server};
 use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
-use crate::ConfigMgrProxyAPI::{GetAPIDefinitionBySpecification, GetOriginDefinitionByID};
-
-fn create_404_not_found_response() -> Result<Response<Body>, Infallible> {
-    let response = Response::new("404 Not Found".into());
-    let (mut parts, body) = response.into_parts();
-    parts.status = StatusCode::NOT_FOUND;
-    parts.headers.append(
-        CONTENT_TYPE,
-        HeaderValue::from_static("text/plain; charset=utf-8"),
-    );
-    parts
-        .headers
-        .append(CONTENT_ENCODING, HeaderValue::from_static("utf-8"));
-    Ok(Response::from_parts(parts, body))
-}
-
-fn create_503_service_unavailable_response() -> Result<Response<Body>, Infallible> {
-    let response = Response::new("503 Service Unavailable".into());
-    let (mut parts, body) = response.into_parts();
-    parts.status = StatusCode::SERVICE_UNAVAILABLE;
-    parts.headers.append(
-        CONTENT_TYPE,
-        HeaderValue::from_static("text/plain; charset=utf-8"),
-    );
-    parts
-        .headers
-        .append(CONTENT_ENCODING, HeaderValue::from_static("utf-8"));
-    Ok(Response::from_parts(parts, body))
-}
-
-fn create_500_int_error_response() -> Result<Response<Body>, Infallible> {
-    let response = Response::new("500 Internal Server Error".into());
-    let (mut parts, body) = response.into_parts();
-    parts.status = StatusCode::INTERNAL_SERVER_ERROR;
-    parts.headers.append(
-        CONTENT_TYPE,
-        HeaderValue::from_static("text/plain; charset=utf-8"),
-    );
-    parts
-        .headers
-        .append(CONTENT_ENCODING, HeaderValue::from_static("utf-8"));
-    Ok(Response::from_parts(parts, body))
-}
+use crate::core::standard_response::create_404_not_found_response;
+use crate::core::standard_response::create_500_int_error_response;
+use crate::core::standard_response::create_503_service_unavailable_response;
 
 fn select_server(servers: &Vec<Server>) -> Option<&Server> {
     servers.get(rand::thread_rng().gen_range(0..servers.len()))
@@ -84,7 +45,7 @@ async fn process_request_to_origin(
                         Duration::from_millis(api_definition.backend_response_timeout),
                         client.request(req_to_origin),
                     )
-                    .await;
+                        .await;
                     match timeout_result {
                         Err(_) => create_503_service_unavailable_response(),
                         Ok(origin_response) => match origin_response {
