@@ -100,7 +100,7 @@ mod test {
         );
         assert_eq!(200, origin.specification.rate_limiter.req_per_time_unit);
         assert_eq!("localhost", origin.specification.servers[0].hostname);
-        assert_eq!(80, origin.specification.servers[0].port);
+        assert_eq!(8000, origin.specification.servers[0].port);
         assert_eq!(true, origin.specification.servers[0].secure);
         assert_eq!(false, origin.specification.servers[0].verify_cert);
 
@@ -122,7 +122,7 @@ mod test {
         );
         assert_eq!(200, origin.specification.rate_limiter.req_per_time_unit);
         assert_eq!("localhost", origin.specification.servers[0].hostname);
-        assert_eq!(80, origin.specification.servers[0].port);
+        assert_eq!(8000, origin.specification.servers[0].port);
         assert_eq!(true, origin.specification.servers[0].secure);
         assert_eq!(false, origin.specification.servers[0].verify_cert);
     }
@@ -142,6 +142,6 @@ mod test {
             }
         }
         let origin = Origin::from_json_string(&file_contents).unwrap();
-        assert_eq!(String::from("{\n  \"origin_id\": \"RFX829635\",\n  \"origin_name\": \"Sample Origin\",\n  \"origin_desc\": \"Some nice origin description that can be pretty long\",\n  \"specification\": {\n    \"rate_limiter\": {\n      \"algorithm\": \"TokenBucket\",\n      \"time_unit\": \"Minute\",\n      \"req_per_time_unit\": 200\n    },\n    \"servers\": [\n      {\n        \"hostname\": \"localhost\",\n        \"port\": 80,\n        \"secure\": true,\n        \"verify_cert\": false\n      }\n    ]\n  }\n}"), origin.to_json_pretty().unwrap());
+        assert_eq!(String::from("{\n  \"origin_id\": \"RFX829635\",\n  \"origin_name\": \"Sample Origin\",\n  \"origin_desc\": \"Some nice origin description that can be pretty long\",\n  \"specification\": {\n    \"rate_limiter\": {\n      \"algorithm\": \"TokenBucket\",\n      \"time_unit\": \"Minute\",\n      \"req_per_time_unit\": 200\n    },\n    \"servers\": [\n      {\n        \"hostname\": \"localhost\",\n        \"port\": 8000,\n        \"secure\": true,\n        \"verify_cert\": false\n      }\n    ]\n  }\n}"), origin.to_json_pretty().unwrap());
     }
 }

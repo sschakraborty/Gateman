@@ -14,6 +14,7 @@ pub struct APIDefinition {
     api_version: String,
     api_desc: String,
     specification: APISpecification,
+    backend_response_timeout: u64,
     origin_id: String,
 }
 
@@ -68,6 +69,7 @@ mod test {
             String::from("Some nice description of this beautiful API"),
             api_definition.api_desc
         );
+        assert_eq!(2500, api_definition.backend_response_timeout);
 
         let json_payload_serialized = api_definition.to_json().unwrap();
         let second_api_definition =
@@ -79,6 +81,7 @@ mod test {
             String::from("Some nice description of this beautiful API"),
             second_api_definition.api_desc
         );
+        assert_eq!(2500, second_api_definition.backend_response_timeout);
 
         let json_pretty_payload_serialized = api_definition.to_json_pretty().unwrap();
         let second_api_definition =
@@ -90,6 +93,7 @@ mod test {
             String::from("Some nice description of this beautiful API"),
             second_api_definition.api_desc
         );
+        assert_eq!(2500, second_api_definition.backend_response_timeout);
 
         assert_eq!(
             String::from("GET"),

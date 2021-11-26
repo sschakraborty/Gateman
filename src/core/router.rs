@@ -1,9 +1,11 @@
 use std::convert::Infallible;
+use std::time::Duration;
 
 use hyper::header::{HeaderValue, CONTENT_ENCODING, CONTENT_TYPE};
 use hyper::{Body, Client, Method, Request, Response, StatusCode, Uri};
 use rand::Rng;
 use tokio::sync::mpsc::Sender;
+use tokio::time::timeout;
 
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
 use crate::configuration_reader::origin_def_reader::{Origin, Server};
@@ -78,10 +80,14 @@ async fn process_request_to_origin(
                 Err(_) => create_500_int_error_response(),
                 Ok(uri) => {
                     *req_to_origin.uri_mut() = uri;
-                    let origin_response = client.request(req_to_origin).await;
-                    match origin_response {
+                    let timeout_result =
+                        timeout(Duration::from_millis(2500), client.request(req_to_origin)).await;
+                    match timeout_result {
                         Err(_) => create_503_service_unavailable_response(),
-                        Ok(response) => Ok(response),
+                        Ok(origin_response) => match origin_response {
+                            Err(_) => create_503_service_unavailable_response(),
+                            Ok(response) => Ok(response),
+                        },
                     }
                 }
             }

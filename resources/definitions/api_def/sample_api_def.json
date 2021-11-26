@@ -19,5 +19,6 @@
             "*.example.com"
         ]
     },
+    "backend_response_timeout": 2500,
     "origin_id": "RFX829635"
 }
