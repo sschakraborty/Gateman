@@ -1,0 +1,18 @@
+{
+    "api_id": "foo_api",
+    "api_name": "Sample Foo API",
+    "api_version": "0.1.0",
+    "api_desc": "Some nice description of this beautiful API",
+    "specification": {
+        "methods": [
+            "GET"
+        ],
+        "paths": [
+            "/"
+        ],
+        "hostnames": [
+            "localhost:8080"
+        ]
+    },
+    "origin_id": "RFX829635"
+}
