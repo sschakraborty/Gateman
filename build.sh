@@ -11,5 +11,5 @@ echo "Rust compiler version: $RUSTC_VERSION"
 BASE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 echo "Base directory: $BASE_DIR"
 
-/bin/bash -c "cd $BASE_DIR && $CARGO_LOC fmt"
-/bin/bash -c "cd $BASE_DIR && $CARGO_LOC build"
+/bin/bash -c "cd $BASE_DIR && $CARGO_LOC fmt" > "$BASE_DIR"/build.log 2>&1
+/bin/bash -c "cd $BASE_DIR && $CARGO_LOC build" > "$BASE_DIR"/build.log 2>&1

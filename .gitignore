@@ -13,3 +13,4 @@ buildNumber.properties
 Cargo.lock
 *.iml
 /resources/file_utils_test/SampleWrittenFile
+build.log
