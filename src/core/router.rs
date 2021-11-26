@@ -103,7 +103,9 @@ pub async fn route_proxy_server(
                 match response {
                     Ok(result) => match result {
                         None => create_503_service_unavailable_response(),
-                        Some(origin_definition) => Ok(Response::new(Body::from("Found!"))),
+                        Some(origin_definition) => {
+                            Ok(Response::new(Body::from("Found API and origin defs!")))
+                        }
                     },
                     Err(_) => create_500_int_error_response(),
                 }
