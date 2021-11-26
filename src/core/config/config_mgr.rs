@@ -23,9 +23,6 @@ pub(crate) async fn deploy_config_mgr(mut receiver: Receiver<ConfigMgrProxyAPI>)
                         specification,
                         responder,
                     } => get_api_def_by_specification(specification, responder, api_definitions),
-                    ConfigMgrProxyAPI::GetAPIDefinitionByID { api_id, responder } => {
-                        get_api_def_by_id(api_id, responder, api_definitions)
-                    }
                     ConfigMgrProxyAPI::GetOriginDefinitionByID {
                         origin_id,
                         responder,
@@ -77,14 +74,6 @@ fn get_api_def_by_specification(
                 .map(|def_ref| def_ref.clone()),
         );
     }
-}
-
-fn get_api_def_by_id(
-    _api_id: String,
-    responder: Sender<Option<APIDefinition>>,
-    _api_definitions: Arc<Vec<APIDefinition>>,
-) {
-    responder.send(Option::None);
 }
 
 fn get_origin_def_by_id(

@@ -8,10 +8,6 @@ pub enum ConfigMgrProxyAPI {
         specification: APISpecification,
         responder: Sender<Option<APIDefinition>>,
     },
-    GetAPIDefinitionByID {
-        api_id: String,
-        responder: Sender<Option<APIDefinition>>,
-    },
     GetOriginDefinitionByID {
         origin_id: String,
         responder: Sender<Option<Origin>>,
