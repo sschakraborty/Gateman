@@ -96,31 +96,43 @@ pub async fn route_proxy_server(
         },
         responder,
     };
-    sender.send(find_api_call).await;
-    let response = receiver.await;
-    match response {
-        Ok(result) => match result {
-            None => create_404_not_found_response(),
-            Some(api_definition) => {
-                let (responder, receiver) = tokio::sync::oneshot::channel();
-                let find_origin_call = GetOriginDefinitionByID {
-                    origin_id: api_definition.origin_id(),
-                    responder,
-                };
-                sender.send(find_origin_call).await;
-                let response = receiver.await;
-                match response {
-                    Ok(result) => match result {
-                        None => create_503_service_unavailable_response(),
-                        Some(origin_definition) => {
-                            process_request_to_origin(api_definition, origin_definition, request)
-                                .await
-                        }
-                    },
-                    Err(_) => create_500_int_error_response(),
-                }
-            }
-        },
+    match sender.send(find_api_call).await {
         Err(_) => create_500_int_error_response(),
+        Ok(_) => {
+            let response = receiver.await;
+            match response {
+                Ok(result) => match result {
+                    None => create_404_not_found_response(),
+                    Some(api_definition) => {
+                        let (responder, receiver) = tokio::sync::oneshot::channel();
+                        let find_origin_call = GetOriginDefinitionByID {
+                            origin_id: api_definition.origin_id(),
+                            responder,
+                        };
+                        match sender.send(find_origin_call).await {
+                            Err(_) => create_500_int_error_response(),
+                            Ok(_) => {
+                                let response = receiver.await;
+                                match response {
+                                    Ok(result) => match result {
+                                        None => create_503_service_unavailable_response(),
+                                        Some(origin_definition) => {
+                                            process_request_to_origin(
+                                                api_definition,
+                                                origin_definition,
+                                                request,
+                                            )
+                                            .await
+                                        }
+                                    },
+                                    Err(_) => create_500_int_error_response(),
+                                }
+                            }
+                        }
+                    }
+                },
+                Err(_) => create_500_int_error_response(),
+            }
+        }
     }
 }
