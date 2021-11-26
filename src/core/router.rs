@@ -106,6 +106,7 @@ pub async fn route_proxy_server(
                         None => create_503_service_unavailable_response(),
                         Some(origin_definition) => {
                             process_request_to_origin(api_definition, origin_definition, request)
+                                .await
                         }
                     },
                     Err(_) => create_500_int_error_response(),
