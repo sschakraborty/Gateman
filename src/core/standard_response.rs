@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
+use hyper::header::{HeaderValue, CONTENT_ENCODING, CONTENT_TYPE};
 use hyper::{Body, Response, StatusCode};
-use hyper::header::{CONTENT_ENCODING, CONTENT_TYPE, HeaderValue};
 
 pub(crate) fn create_404_not_found_response() -> Result<Response<Body>, Infallible> {
     let response = Response::new("404 Not Found".into());

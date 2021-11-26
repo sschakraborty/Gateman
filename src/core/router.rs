@@ -1,19 +1,19 @@
 use std::convert::Infallible;
 use std::time::Duration;
 
+use hyper::header::{HeaderValue, CONTENT_ENCODING, CONTENT_TYPE};
 use hyper::{Body, Client, Method, Request, Response, StatusCode, Uri};
-use hyper::header::{CONTENT_ENCODING, CONTENT_TYPE, HeaderValue};
 use rand::Rng;
 use tokio::sync::mpsc::Sender;
 use tokio::time::timeout;
 
-use crate::ConfigMgrProxyAPI::{GetAPIDefinitionBySpecification, GetOriginDefinitionByID};
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
 use crate::configuration_reader::origin_def_reader::{Origin, Server};
 use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
 use crate::core::standard_response::create_404_not_found_response;
 use crate::core::standard_response::create_500_int_error_response;
 use crate::core::standard_response::create_503_service_unavailable_response;
+use crate::ConfigMgrProxyAPI::{GetAPIDefinitionBySpecification, GetOriginDefinitionByID};
 
 fn select_server(servers: &Vec<Server>) -> Option<&Server> {
     servers.get(rand::thread_rng().gen_range(0..servers.len()))
@@ -45,7 +45,7 @@ async fn process_request_to_origin(
                         Duration::from_millis(api_definition.backend_response_timeout),
                         client.request(req_to_origin),
                     )
-                        .await;
+                    .await;
                     match timeout_result {
                         Err(_) => create_503_service_unavailable_response(),
                         Ok(origin_response) => match origin_response {
