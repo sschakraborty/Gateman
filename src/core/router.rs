@@ -59,7 +59,7 @@ fn select_server(servers: &Vec<Server>) -> Option<&Server> {
 }
 
 async fn process_request_to_origin(
-    _api_definition: APIDefinition,
+    api_definition: APIDefinition,
     origin_definition: Origin,
     request: Request<Body>,
 ) -> Result<Response<Body>, Infallible> {
@@ -80,8 +80,11 @@ async fn process_request_to_origin(
                 Err(_) => create_500_int_error_response(),
                 Ok(uri) => {
                     *req_to_origin.uri_mut() = uri;
-                    let timeout_result =
-                        timeout(Duration::from_millis(2500), client.request(req_to_origin)).await;
+                    let timeout_result = timeout(
+                        Duration::from_millis(api_definition.backend_response_timeout),
+                        client.request(req_to_origin),
+                    )
+                    .await;
                     match timeout_result {
                         Err(_) => create_503_service_unavailable_response(),
                         Ok(origin_response) => match origin_response {
