@@ -3,9 +3,9 @@ use std::sync::Arc;
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::oneshot::Sender;
 
-use crate::ConfigMgrProxyAPI;
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
 use crate::core::config::read_config::{read_all_api_definitions, read_all_origin_definitions};
+use crate::ConfigMgrProxyAPI;
 
 pub(crate) async fn deploy_config_mgr(mut receiver: Receiver<ConfigMgrProxyAPI>) {
     let api_definitions = Arc::new(read_all_api_definitions());

@@ -37,7 +37,7 @@ mod test {
         let result = FileReader::from_path(
             "/home/sschakraborty/Projects/Gateman/resources/file_utils_test/Sample",
         )
-            .read();
+        .read();
         match result {
             Ok(content) => {
                 println!("{}", content);

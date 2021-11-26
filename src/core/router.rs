@@ -1,12 +1,12 @@
 use std::convert::Infallible;
 
+use hyper::header::{HeaderValue, CONTENT_ENCODING, CONTENT_TYPE};
 use hyper::{Body, Method, Request, Response, StatusCode};
-use hyper::header::{CONTENT_ENCODING, CONTENT_TYPE, HeaderValue};
 use tokio::sync::mpsc::Sender;
 
-use crate::ConfigMgrProxyAPI::GetAPIDefinitionBySpecification;
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
 use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
+use crate::ConfigMgrProxyAPI::GetAPIDefinitionBySpecification;
 
 fn create_404_not_found_response() -> Result<Response<Body>, Infallible> {
     let response = Response::new("404 Not Found".into());
