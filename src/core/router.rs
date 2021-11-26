@@ -39,7 +39,7 @@ fn create_503_service_unavailable_response() -> Result<Response<Body>, Infallibl
 }
 
 fn create_500_int_error_response() -> Result<Response<Body>, Infallible> {
-    let response = Response::new("Error While Processing".into());
+    let response = Response::new("500 Internal Server Error".into());
     let (mut parts, body) = response.into_parts();
     parts.status = StatusCode::INTERNAL_SERVER_ERROR;
     parts.headers.append(
@@ -79,7 +79,7 @@ async fn process_request_to_origin(
                     *req_to_origin.uri_mut() = uri;
                     let origin_response = client.request(req_to_origin).await;
                     match origin_response {
-                        Err(_) => create_500_int_error_response(),
+                        Err(_) => create_503_service_unavailable_response(),
                         Ok(response) => Ok(response),
                     }
                 }
