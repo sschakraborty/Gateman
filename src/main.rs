@@ -15,7 +15,7 @@ fn main() {
         .build()
         .unwrap()
         .block_on(async {
-            let (tx, mut rx) = mpsc::channel::<ConfigMgrProxyAPI>(32);
+            let (tx, rx) = mpsc::channel::<ConfigMgrProxyAPI>(32);
             tokio::join!(
                 tokio::spawn(deploy_config_mgr(rx)),
                 tokio::spawn(deploy_mgt_server(8888, tx.clone())),

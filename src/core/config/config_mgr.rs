@@ -11,7 +11,8 @@ use crate::ConfigMgrProxyAPI;
 pub(crate) async fn deploy_config_mgr(mut receiver: Receiver<ConfigMgrProxyAPI>) {
     let api_definitions = Arc::new(read_all_api_definitions());
     let origin_definitions = Arc::new(read_all_origin_definitions());
-    while let api_call = receiver.recv().await {
+    loop {
+        let api_call = receiver.recv().await;
         if api_call.is_some() {
             let api_call = api_call.unwrap();
             let api_definitions = api_definitions.clone();

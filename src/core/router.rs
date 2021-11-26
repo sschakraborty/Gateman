@@ -1,8 +1,8 @@
 use std::convert::Infallible;
 use std::time::Duration;
 
-use hyper::header::{HeaderValue, CONTENT_ENCODING, CONTENT_TYPE};
-use hyper::{Body, Client, Method, Request, Response, StatusCode, Uri};
+use hyper::header::{HeaderValue, CONTENT_TYPE};
+use hyper::{Body, Client, Method, Request, Response, Uri};
 use rand::Rng;
 use tokio::sync::mpsc::Sender;
 use tokio::time::timeout;
