@@ -72,6 +72,7 @@ async fn process_request_to_origin(
             url_path.push_str(server.hostname.as_str());
             url_path.push_str(":");
             url_path.push_str(server.port.to_string().as_str());
+            url_path.push_str(req_to_origin.uri().path_and_query().unwrap().as_str());
             let uri_parse_result = url_path.as_str().parse::<Uri>();
             match uri_parse_result {
                 Err(_) => create_500_int_error_response(),
