@@ -1,26 +1,26 @@
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum RateLimiterAlgorithm {
     TokenBucket,
     LeakyBucket,
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TimeUnit {
     Minute,
     Second,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct RateLimiterConfig {
     algorithm: RateLimiterAlgorithm,
     time_unit: TimeUnit,
     req_per_time_unit: u32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Server {
     hostname: String,
     port: u16,
@@ -28,13 +28,13 @@ pub struct Server {
     verify_cert: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct OriginSpecification {
     rate_limiter: RateLimiterConfig,
     servers: Vec<Server>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Origin {
     origin_id: String,
     origin_name: String,
@@ -54,6 +54,9 @@ impl Origin {
     }
     pub fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string_pretty(self)
+    }
+    pub fn has_id(&self, origin_id: &String) -> bool {
+        self.origin_id.eq(origin_id)
     }
 }
 

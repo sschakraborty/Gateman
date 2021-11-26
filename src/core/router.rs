@@ -6,12 +6,26 @@ use tokio::sync::mpsc::Sender;
 
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
 use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
-use crate::ConfigMgrProxyAPI::GetAPIDefinitionBySpecification;
+use crate::ConfigMgrProxyAPI::{GetAPIDefinitionBySpecification, GetOriginDefinitionByID};
 
 fn create_404_not_found_response() -> Result<Response<Body>, Infallible> {
     let response = Response::new("404 Not Found".into());
     let (mut parts, body) = response.into_parts();
     parts.status = StatusCode::NOT_FOUND;
+    parts.headers.append(
+        CONTENT_TYPE,
+        HeaderValue::from_static("text/plain; charset=utf-8"),
+    );
+    parts
+        .headers
+        .append(CONTENT_ENCODING, HeaderValue::from_static("utf-8"));
+    Ok(Response::from_parts(parts, body))
+}
+
+fn create_503_service_unavailable_response() -> Result<Response<Body>, Infallible> {
+    let response = Response::new("503 Service Unavailable".into());
+    let (mut parts, body) = response.into_parts();
+    parts.status = StatusCode::SERVICE_UNAVAILABLE;
     parts.headers.append(
         CONTENT_TYPE,
         HeaderValue::from_static("text/plain; charset=utf-8"),
@@ -78,7 +92,22 @@ pub async fn route_proxy_server(
     match response {
         Ok(result) => match result {
             None => create_404_not_found_response(),
-            Some(_api_definition) => Ok(Response::new(Body::from("Found!"))),
+            Some(api_definition) => {
+                let (responder, receiver) = tokio::sync::oneshot::channel();
+                let find_origin_call = GetOriginDefinitionByID {
+                    origin_id: api_definition.origin_id(),
+                    responder,
+                };
+                sender.send(find_origin_call).await;
+                let response = receiver.await;
+                match response {
+                    Ok(result) => match result {
+                        None => create_503_service_unavailable_response(),
+                        Some(origin_definition) => Ok(Response::new(Body::from("Found!"))),
+                    },
+                    Err(_) => create_500_int_error_response(),
+                }
+            }
         },
         Err(_) => create_500_int_error_response(),
     }

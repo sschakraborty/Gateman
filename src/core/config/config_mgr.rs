@@ -4,16 +4,18 @@ use tokio::sync::mpsc::Receiver;
 use tokio::sync::oneshot::Sender;
 
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
+use crate::configuration_reader::origin_def_reader::Origin;
 use crate::core::config::read_config::{read_all_api_definitions, read_all_origin_definitions};
 use crate::ConfigMgrProxyAPI;
 
 pub(crate) async fn deploy_config_mgr(mut receiver: Receiver<ConfigMgrProxyAPI>) {
     let api_definitions = Arc::new(read_all_api_definitions());
-    let _origin_definitions = Arc::new(read_all_origin_definitions());
+    let origin_definitions = Arc::new(read_all_origin_definitions());
     while let api_call = receiver.recv().await {
         if api_call.is_some() {
             let api_call = api_call.unwrap();
             let api_definitions = api_definitions.clone();
+            let origin_definitions = origin_definitions.clone();
             tokio::spawn(async move {
                 match api_call {
                     ConfigMgrProxyAPI::GetAPIDefinitionBySpecification {
@@ -23,6 +25,10 @@ pub(crate) async fn deploy_config_mgr(mut receiver: Receiver<ConfigMgrProxyAPI>)
                     ConfigMgrProxyAPI::GetAPIDefinitionByID { api_id, responder } => {
                         get_api_def_by_id(api_id, responder, api_definitions)
                     }
+                    ConfigMgrProxyAPI::GetOriginDefinitionByID {
+                        origin_id,
+                        responder,
+                    } => get_origin_def_by_id(origin_id, responder, origin_definitions),
                 }
             });
         }
@@ -78,4 +84,19 @@ fn get_api_def_by_id(
     _api_definitions: Arc<Vec<APIDefinition>>,
 ) {
     responder.send(Option::None);
+}
+
+fn get_origin_def_by_id(
+    origin_id: String,
+    responder: Sender<Option<Origin>>,
+    origin_definitions: Arc<Vec<Origin>>,
+) {
+    let mut origin_def_selected: Option<Origin> = Option::None;
+    let id_ref_to_find = &origin_id;
+    for origin_definition in origin_definitions.as_ref() {
+        if origin_definition.has_id(id_ref_to_find) {
+            origin_def_selected = Option::Some(origin_definition.clone());
+        }
+    }
+    responder.send(origin_def_selected);
 }

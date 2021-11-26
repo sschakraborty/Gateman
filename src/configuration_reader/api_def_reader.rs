@@ -33,6 +33,9 @@ impl APIDefinition {
     pub fn specification_as_ref(&self) -> &APISpecification {
         &self.specification
     }
+    pub fn origin_id(&self) -> String {
+        self.origin_id.clone()
+    }
 }
 
 #[cfg(test)]
