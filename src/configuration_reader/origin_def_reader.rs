@@ -15,9 +15,9 @@ pub enum TimeUnit {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RateLimiterConfig {
-    algorithm: RateLimiterAlgorithm,
-    time_unit: TimeUnit,
-    req_per_time_unit: u32,
+    pub(crate) algorithm: RateLimiterAlgorithm,
+    pub(crate) time_unit: TimeUnit,
+    pub(crate) req_per_time_unit: u32,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -36,10 +36,10 @@ pub struct OriginSpecification {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Origin {
-    origin_id: String,
-    origin_name: String,
-    origin_desc: String,
-    specification: OriginSpecification,
+    pub(crate) origin_id: String,
+    pub(crate) origin_name: String,
+    pub(crate) origin_desc: String,
+    pub(crate) specification: OriginSpecification,
 }
 
 impl Origin {
@@ -57,9 +57,6 @@ impl Origin {
     }
     pub fn has_id(&self, origin_id: &String) -> bool {
         self.origin_id.eq(origin_id)
-    }
-    pub fn get_specification_ref(&self) -> &OriginSpecification {
-        &self.specification
     }
 }
 

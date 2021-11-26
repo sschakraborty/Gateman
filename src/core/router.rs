@@ -26,7 +26,7 @@ async fn process_request_to_origin(
 ) -> Result<Response<Body>, Infallible> {
     let client = Client::new();
     let mut req_to_origin = Request::from(request);
-    let origin_spec = origin_definition.get_specification_ref();
+    let origin_spec = &(origin_definition.specification);
     let server = select_server(&origin_spec.servers);
     match server {
         None => create_503_service_unavailable_response(),
