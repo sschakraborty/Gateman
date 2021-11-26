@@ -1,11 +1,12 @@
 use std::convert::Infallible;
 
 use hyper::header::{HeaderValue, CONTENT_ENCODING, CONTENT_TYPE};
-use hyper::{Body, Method, Request, Response, StatusCode};
+use hyper::{Body, Client, Method, Request, Response, StatusCode, Uri};
+use rand::Rng;
 use tokio::sync::mpsc::Sender;
 
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
-use crate::configuration_reader::origin_def_reader::Origin;
+use crate::configuration_reader::origin_def_reader::{Origin, Server};
 use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
 use crate::ConfigMgrProxyAPI::{GetAPIDefinitionBySpecification, GetOriginDefinitionByID};
 
@@ -51,12 +52,40 @@ fn create_500_int_error_response() -> Result<Response<Body>, Infallible> {
     Ok(Response::from_parts(parts, body))
 }
 
+fn select_server(servers: &Vec<Server>) -> Option<&Server> {
+    servers.get(rand::thread_rng().gen_range(0..servers.len()))
+}
+
 async fn process_request_to_origin(
     _api_definition: APIDefinition,
-    _origin_definition: Origin,
-    _request: Request<Body>,
+    origin_definition: Origin,
+    request: Request<Body>,
 ) -> Result<Response<Body>, Infallible> {
-    Ok(Response::new(Body::from("Found API and origin defs!")))
+    let client = Client::new();
+    let mut req_to_origin = Request::from(request);
+    let origin_spec = origin_definition.get_specification_ref();
+    let server = select_server(&origin_spec.servers);
+    match server {
+        None => create_503_service_unavailable_response(),
+        Some(server) => {
+            let mut url_path = String::from("http://");
+            url_path.push_str(server.hostname.as_str());
+            url_path.push_str(":");
+            url_path.push_str(server.port.to_string().as_str());
+            let uri_parse_result = url_path.as_str().parse::<Uri>();
+            match uri_parse_result {
+                Err(_) => create_500_int_error_response(),
+                Ok(uri) => {
+                    *req_to_origin.uri_mut() = uri;
+                    let origin_response = client.request(req_to_origin).await;
+                    match origin_response {
+                        Err(_) => create_500_int_error_response(),
+                        Ok(response) => Ok(response),
+                    }
+                }
+            }
+        }
+    }
 }
 
 pub async fn route_mgt_server(

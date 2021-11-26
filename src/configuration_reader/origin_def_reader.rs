@@ -22,16 +22,16 @@ pub struct RateLimiterConfig {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Server {
-    hostname: String,
-    port: u16,
-    secure: bool,
-    verify_cert: bool,
+    pub(crate) hostname: String,
+    pub(crate) port: u16,
+    pub(crate) secure: bool,
+    pub(crate) verify_cert: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct OriginSpecification {
-    rate_limiter: RateLimiterConfig,
-    servers: Vec<Server>,
+    pub(crate) rate_limiter: RateLimiterConfig,
+    pub(crate) servers: Vec<Server>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -57,6 +57,9 @@ impl Origin {
     }
     pub fn has_id(&self, origin_id: &String) -> bool {
         self.origin_id.eq(origin_id)
+    }
+    pub fn get_specification_ref(&self) -> &OriginSpecification {
+        &self.specification
     }
 }
 
