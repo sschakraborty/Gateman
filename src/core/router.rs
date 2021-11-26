@@ -51,6 +51,14 @@ fn create_500_int_error_response() -> Result<Response<Body>, Infallible> {
     Ok(Response::from_parts(parts, body))
 }
 
+async fn process_request_to_origin(
+    _api_definition: APIDefinition,
+    _origin_definition: Origin,
+    _request: Request<Body>,
+) -> Result<Response<Body>, Infallible> {
+    Ok(Response::new(Body::from("Found API and origin defs!")))
+}
+
 pub async fn route_mgt_server(
     request: Request<Body>,
     _sender: Sender<ConfigMgrProxyAPI>,
@@ -66,14 +74,6 @@ pub async fn route_mgt_server(
         }
         (_, _) => create_404_not_found_response(),
     }
-}
-
-async fn process_request_to_origin(
-    _api_definition: APIDefinition,
-    _origin_definition: Origin,
-    _request: Request<Body>,
-) -> Result<Response<Body>, Infallible> {
-    Ok(Response::new(Body::from("Found API and origin defs!")))
 }
 
 pub async fn route_proxy_server(
