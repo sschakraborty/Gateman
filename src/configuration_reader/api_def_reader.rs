@@ -9,13 +9,13 @@ pub struct APISpecification {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct APIDefinition {
-    api_id: String,
-    api_name: String,
-    api_version: String,
-    api_desc: String,
-    specification: APISpecification,
-    backend_response_timeout: u64,
-    origin_id: String,
+    pub(crate) api_id: String,
+    pub(crate) api_name: String,
+    pub(crate) api_version: String,
+    pub(crate) api_desc: String,
+    pub(crate) specification: APISpecification,
+    pub(crate) backend_response_timeout: u64,
+    pub(crate) origin_id: String,
 }
 
 impl APIDefinition {
@@ -30,9 +30,6 @@ impl APIDefinition {
     }
     pub fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string_pretty(self)
-    }
-    pub fn specification_as_ref(&self) -> &APISpecification {
-        &self.specification
     }
     pub fn origin_id(&self) -> String {
         self.origin_id.clone()

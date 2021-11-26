@@ -42,7 +42,7 @@ fn get_api_def_by_specification(
 ) {
     let mut matching_path_api_def_vec: Vec<&APIDefinition> = vec![];
     for api_definition in api_definitions.as_ref() {
-        let api_specification = api_definition.specification_as_ref();
+        let api_specification = &(api_definition.specification);
         for query_path in &query_specification.paths {
             for api_path in &api_specification.paths {
                 if query_path.starts_with(api_path) {
@@ -54,7 +54,7 @@ fn get_api_def_by_specification(
     let mut matching_method_api_def_vec: Vec<&APIDefinition> = vec![];
     for api_definition in matching_path_api_def_vec {
         for method in &query_specification.methods {
-            if (&api_definition.specification_as_ref().methods).contains(method) {
+            if (&(api_definition.specification).methods).contains(method) {
                 matching_method_api_def_vec.push(api_definition);
             }
         }
@@ -62,7 +62,7 @@ fn get_api_def_by_specification(
     let mut matching_hostname_api_def_vec = vec![];
     for api_definition in matching_method_api_def_vec {
         for hostname in &query_specification.hostnames {
-            if (&api_definition.specification_as_ref().hostnames).contains(hostname) {
+            if (&(api_definition.specification).hostnames).contains(hostname) {
                 matching_hostname_api_def_vec.push(api_definition);
             }
         }
