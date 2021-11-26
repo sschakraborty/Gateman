@@ -13,6 +13,7 @@ use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
 use crate::core::standard_response::create_404_not_found_response;
 use crate::core::standard_response::create_500_int_error_response;
 use crate::core::standard_response::create_503_service_unavailable_response;
+use crate::core::standard_response::create_504_gateway_timeout_response;
 use crate::ConfigMgrProxyAPI::{GetAPIDefinitionBySpecification, GetOriginDefinitionByID};
 
 fn select_server(servers: &Vec<Server>) -> Option<&Server> {
@@ -47,7 +48,7 @@ async fn process_request_to_origin(
                     )
                     .await;
                     match timeout_result {
-                        Err(_) => create_503_service_unavailable_response(),
+                        Err(_) => create_504_gateway_timeout_response(),
                         Ok(origin_response) => match origin_response {
                             Err(_) => create_503_service_unavailable_response(),
                             Ok(response) => Ok(response),
