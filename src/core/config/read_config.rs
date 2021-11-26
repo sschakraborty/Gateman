@@ -46,7 +46,7 @@ fn read_config_file_paths(current_directory: PathBuf) -> Vec<PathBuf> {
 pub fn read_all_api_definitions() -> Vec<APIDefinition> {
     let mut api_definitions = vec![];
     let all_file_paths = read_config_file_paths(
-        get_directory_of_executable().join(Path::new("config/definitions/api_def")),
+        get_directory_of_executable().join(Path::new("resources/definitions/api_def")),
     );
     for path_buffer in all_file_paths {
         match FileReader::from_path(path_buffer.to_str().unwrap()).read() {
@@ -80,7 +80,7 @@ pub fn read_all_api_definitions() -> Vec<APIDefinition> {
 pub fn read_all_origin_definitions() -> Vec<Origin> {
     let mut origin_definitions = vec![];
     let all_file_paths = read_config_file_paths(
-        get_directory_of_executable().join(Path::new("config/definitions/origin_def")),
+        get_directory_of_executable().join(Path::new("resources/definitions/origin_def")),
     );
     for path_buffer in all_file_paths {
         match FileReader::from_path(path_buffer.to_str().unwrap()).read() {

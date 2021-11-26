@@ -1,12 +1,12 @@
 use std::convert::Infallible;
 use std::net::SocketAddr;
 
-use hyper::service::{make_service_fn, service_fn};
 use hyper::Server;
+use hyper::service::{make_service_fn, service_fn};
 use tokio::sync::mpsc::Sender;
 
-use crate::core::router::{route_mgt_server, route_proxy_server};
 use crate::ConfigMgrProxyAPI;
+use crate::core::router::{route_mgt_server, route_proxy_server};
 
 async fn ctrl_c_shutdown_signal() {
     tokio::signal::ctrl_c()

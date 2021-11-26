@@ -3,9 +3,9 @@ use std::sync::Arc;
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::oneshot::Sender;
 
+use crate::ConfigMgrProxyAPI;
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
 use crate::core::config::read_config::{read_all_api_definitions, read_all_origin_definitions};
-use crate::ConfigMgrProxyAPI;
 
 pub(crate) async fn deploy_config_mgr(mut receiver: Receiver<ConfigMgrProxyAPI>) {
     let api_definitions = Arc::new(read_all_api_definitions());
@@ -30,11 +30,43 @@ pub(crate) async fn deploy_config_mgr(mut receiver: Receiver<ConfigMgrProxyAPI>)
 }
 
 fn get_api_def_by_specification(
-    _specification: APISpecification,
+    query_specification: APISpecification,
     responder: Sender<Option<APIDefinition>>,
-    _api_definitions: Arc<Vec<APIDefinition>>,
+    api_definitions: Arc<Vec<APIDefinition>>,
 ) {
-    responder.send(Option::None);
+    let mut matching_path_api_def_vec: Vec<&APIDefinition> = vec![];
+    for api_definition in api_definitions.as_ref() {
+        let api_specification = api_definition.specification_as_ref();
+        for query_path in &query_specification.paths {
+            for api_path in &api_specification.paths {
+                if query_path.starts_with(api_path) {
+                    matching_path_api_def_vec.push(api_definition);
+                }
+            }
+        }
+    }
+    let mut matching_method_api_def_vec: Vec<&APIDefinition> = vec![];
+    for api_definition in matching_path_api_def_vec {
+        for method in &query_specification.methods {
+            if (&api_definition.specification_as_ref().methods).contains(method) {
+                matching_method_api_def_vec.push(api_definition);
+            }
+        }
+    }
+    let mut matching_hostname_api_def_vec = vec![];
+    for api_definition in matching_method_api_def_vec {
+        for hostname in &query_specification.hostnames {
+            if (&api_definition.specification_as_ref().hostnames).contains(hostname) {
+                matching_hostname_api_def_vec.push(api_definition);
+            }
+        }
+    }
+    if matching_hostname_api_def_vec.is_empty() {
+        responder.send(Option::None);
+    } else {
+        // Todo: Implement the proper responder
+        responder.send(Option::None);
+    }
 }
 
 fn get_api_def_by_id(

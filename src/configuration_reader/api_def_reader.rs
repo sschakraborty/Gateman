@@ -30,6 +30,9 @@ impl APIDefinition {
     pub fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string_pretty(self)
     }
+    pub fn specification_as_ref(&self) -> &APISpecification {
+        &self.specification
+    }
 }
 
 #[cfg(test)]
