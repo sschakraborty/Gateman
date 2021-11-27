@@ -58,3 +58,17 @@ pub(crate) fn create_500_int_error_response() -> Result<Response<Body>, Infallib
         .append(CONTENT_ENCODING, HeaderValue::from_static("utf-8"));
     Ok(Response::from_parts(parts, body))
 }
+
+pub(crate) fn create_429_too_many_requests_response() -> Result<Response<Body>, Infallible> {
+    let response = Response::new("429 Too Many Requests".into());
+    let (mut parts, body) = response.into_parts();
+    parts.status = StatusCode::TOO_MANY_REQUESTS;
+    parts.headers.append(
+        CONTENT_TYPE,
+        HeaderValue::from_static("text/plain; charset=utf-8"),
+    );
+    parts
+        .headers
+        .append(CONTENT_ENCODING, HeaderValue::from_static("utf-8"));
+    Ok(Response::from_parts(parts, body))
+}

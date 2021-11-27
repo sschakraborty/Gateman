@@ -2,6 +2,8 @@ use tokio::sync::mpsc;
 
 use crate::core::config::config_mgr::deploy_config_mgr;
 use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
+use crate::core::rate_limiter::rate_limiter_api::RateLimiterAPI;
+use crate::core::rate_limiter::rate_limiting_engine::deploy_rate_limiter;
 use crate::core::reverse_proxy::{deploy_mgt_server, deploy_reverse_proxy};
 
 mod configuration_reader;
@@ -15,11 +17,17 @@ fn main() {
         .build()
         .unwrap()
         .block_on(async {
-            let (tx, rx) = mpsc::channel::<ConfigMgrProxyAPI>(32);
+            let (rate_limiter_tx, rate_limiter_rx) = mpsc::channel::<RateLimiterAPI>(32);
+            let (config_mgr_tx, config_mgr_rx) = mpsc::channel::<ConfigMgrProxyAPI>(32);
             tokio::join!(
-                tokio::spawn(deploy_config_mgr(rx)),
-                tokio::spawn(deploy_mgt_server(8888, tx.clone())),
-                tokio::spawn(deploy_reverse_proxy(8080, tx.clone()))
+                tokio::spawn(deploy_rate_limiter(rate_limiter_rx)),
+                tokio::spawn(deploy_config_mgr(config_mgr_rx)),
+                tokio::spawn(deploy_mgt_server(8888, config_mgr_tx.clone())),
+                tokio::spawn(deploy_reverse_proxy(
+                    8080,
+                    config_mgr_tx.clone(),
+                    rate_limiter_tx.clone()
+                ))
             );
         });
 }

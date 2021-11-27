@@ -6,7 +6,7 @@ use hyper::Server;
 use tokio::sync::mpsc::Sender;
 
 use crate::core::router::{route_mgt_server, route_proxy_server};
-use crate::ConfigMgrProxyAPI;
+use crate::{ConfigMgrProxyAPI, RateLimiterAPI};
 
 async fn ctrl_c_shutdown_signal() {
     tokio::signal::ctrl_c()
@@ -43,13 +43,15 @@ pub async fn deploy_mgt_server(
 pub async fn deploy_reverse_proxy(
     port: u16,
     config_mgr_tx: Sender<ConfigMgrProxyAPI>,
+    rate_limiter_tx: Sender<RateLimiterAPI>,
 ) -> hyper::Result<()> {
     let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
     let make_svc_metadata = make_service_fn(move |_| {
+        let rate_limiter_tx = rate_limiter_tx.clone();
         let config_mgr_tx = config_mgr_tx.clone();
         async move {
             Ok::<_, Infallible>(service_fn(move |request| {
-                route_proxy_server(request, config_mgr_tx.clone())
+                route_proxy_server(request, config_mgr_tx.clone(), rate_limiter_tx.clone())
             }))
         }
     });
