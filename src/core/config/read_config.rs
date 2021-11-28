@@ -7,7 +7,7 @@ use crate::configuration_reader::origin_def_reader::Origin;
 use crate::file_utils::file_reader::FileReader;
 
 fn get_directory_of_executable() -> PathBuf {
-    env::current_dir().unwrap()
+    env::current_exe().unwrap()
 }
 
 fn read_config_file_paths(current_directory: PathBuf) -> Vec<PathBuf> {
