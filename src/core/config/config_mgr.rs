@@ -6,11 +6,27 @@ use tokio::sync::oneshot::Sender;
 use crate::configuration_reader::api_def_reader::{APIDefinition, APISpecification};
 use crate::configuration_reader::origin_def_reader::Origin;
 use crate::core::config::read_config::{read_all_api_definitions, read_all_origin_definitions};
-use crate::ConfigMgrProxyAPI;
+use crate::{ConfigMgrProxyAPI, RateLimiterAPI};
 
-pub(crate) async fn deploy_config_mgr(mut receiver: Receiver<ConfigMgrProxyAPI>) {
+fn initialize(
+    rate_limiter_tx: tokio::sync::mpsc::Sender<RateLimiterAPI>,
+) -> (Arc<Vec<APIDefinition>>, Arc<Vec<Origin>>) {
     let api_definitions = Arc::new(read_all_api_definitions());
     let origin_definitions = Arc::new(read_all_origin_definitions());
+    for origin_def in origin_definitions.as_ref() {
+        rate_limiter_tx.send(RateLimiterAPI::UpdateOriginSpecification {
+            origin_id: origin_def.origin_id.clone(),
+            rate_limiter_spec: origin_def.specification.rate_limiter.clone(),
+        });
+    }
+    (api_definitions, origin_definitions)
+}
+
+pub(crate) async fn deploy_config_mgr(
+    mut receiver: Receiver<ConfigMgrProxyAPI>,
+    rate_limiter_tx: tokio::sync::mpsc::Sender<RateLimiterAPI>,
+) {
+    let (api_definitions, origin_definitions) = initialize(rate_limiter_tx);
     loop {
         let api_call = receiver.recv().await;
         if api_call.is_some() {

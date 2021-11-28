@@ -21,7 +21,7 @@ fn main() {
             let (config_mgr_tx, config_mgr_rx) = mpsc::channel::<ConfigMgrProxyAPI>(32);
             tokio::join!(
                 tokio::spawn(deploy_rate_limiter(rate_limiter_rx)),
-                tokio::spawn(deploy_config_mgr(config_mgr_rx)),
+                tokio::spawn(deploy_config_mgr(config_mgr_rx, rate_limiter_tx.clone())),
                 tokio::spawn(deploy_mgt_server(8888, config_mgr_tx.clone())),
                 tokio::spawn(deploy_reverse_proxy(
                     8080,
