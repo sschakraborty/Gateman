@@ -2,12 +2,6 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum RateLimiterAlgorithm {
-    TokenBucket,
-    LeakyBucket,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TimeUnit {
     Minute,
     Second,
@@ -15,7 +9,6 @@ pub enum TimeUnit {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RateLimiterConfig {
-    pub(crate) algorithm: RateLimiterAlgorithm,
     pub(crate) time_unit: TimeUnit,
     pub(crate) req_per_time_unit: u32,
 }
@@ -64,7 +57,7 @@ impl Origin {
 mod test {
     use std::io::Read;
 
-    use crate::configuration_reader::origin_def_reader::{Origin, RateLimiterAlgorithm, TimeUnit};
+    use crate::configuration_reader::origin_def_reader::{Origin, TimeUnit};
 
     #[test]
     fn test_deserialize() {
@@ -88,10 +81,6 @@ mod test {
             origin.origin_desc
         );
         assert_eq!(
-            RateLimiterAlgorithm::TokenBucket,
-            origin.specification.rate_limiter.algorithm
-        );
-        assert_eq!(
             TimeUnit::Minute,
             origin.specification.rate_limiter.time_unit
         );
@@ -108,10 +97,6 @@ mod test {
         assert_eq!(
             "Some nice origin description that can be pretty long",
             origin.origin_desc
-        );
-        assert_eq!(
-            RateLimiterAlgorithm::TokenBucket,
-            origin.specification.rate_limiter.algorithm
         );
         assert_eq!(
             TimeUnit::Minute,
@@ -139,6 +124,6 @@ mod test {
             }
         }
         let origin = Origin::from_json_string(&file_contents).unwrap();
-        assert_eq!(String::from("{\n  \"origin_id\": \"RFX829635\",\n  \"origin_name\": \"Sample Origin\",\n  \"origin_desc\": \"Some nice origin description that can be pretty long\",\n  \"specification\": {\n    \"rate_limiter\": {\n      \"algorithm\": \"TokenBucket\",\n      \"time_unit\": \"Minute\",\n      \"req_per_time_unit\": 200\n    },\n    \"servers\": [\n      {\n        \"hostname\": \"localhost\",\n        \"port\": 8000,\n        \"secure\": true,\n        \"verify_cert\": false\n      }\n    ]\n  }\n}"), origin.to_json_pretty().unwrap());
+        assert_eq!(String::from("{\n  \"origin_id\": \"RFX829635\",\n  \"origin_name\": \"Sample Origin\",\n  \"origin_desc\": \"Some nice origin description that can be pretty long\",\n  \"specification\": {\n    \"rate_limiter\": {\n      \"time_unit\": \"Minute\",\n      \"req_per_time_unit\": 200\n    },\n    \"servers\": [\n      {\n        \"hostname\": \"localhost\",\n        \"port\": 8000,\n        \"secure\": true,\n        \"verify_cert\": false\n      }\n    ]\n  }\n}"), origin.to_json_pretty().unwrap());
     }
 }
