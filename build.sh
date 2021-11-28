@@ -26,7 +26,7 @@ echo "Base directory: $BASE_DIR"
 /bin/bash -c "cd $BASE_DIR && $CARGO_LOC fmt" > "$BASE_DIR"/build.log 2>&1
 /bin/bash -c "cd $BASE_DIR && $CARGO_LOC build $CARGO_BUILD_FLAG" > "$BASE_DIR"/build.log 2>&1
 
-mkdir -p "$BASE_DIR"/build
+rm -rf "$BASE_DIR"/build
 mkdir -p "$BASE_DIR"/build/resources/definitions
 cp -vf "$BASE_DIR"/target/"$BUILD_MODE"/Gateman "$BASE_DIR"/build/
 chmod go-rwx "$BASE_DIR"/build/Gateman
