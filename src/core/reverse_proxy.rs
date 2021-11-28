@@ -34,8 +34,6 @@ pub async fn deploy_mgt_server(
 
     if let Err(e) = result.as_ref() {
         eprintln!("Management server error: {}", e);
-    } else {
-        println!("Management server started on port {}!", port);
     }
     result
 }
@@ -62,8 +60,6 @@ pub async fn deploy_reverse_proxy(
 
     if let Err(e) = result.as_ref() {
         eprintln!("Proxy server error: {}", e);
-    } else {
-        println!("Proxy server started on port {}", port);
     }
     result
 }

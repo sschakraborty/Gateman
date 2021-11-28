@@ -19,15 +19,15 @@ fn main() {
         .block_on(async {
             let (rate_limiter_tx, rate_limiter_rx) = mpsc::channel::<RateLimiterAPI>(32);
             let (config_mgr_tx, config_mgr_rx) = mpsc::channel::<ConfigMgrProxyAPI>(32);
-            tokio::join!(
-                tokio::spawn(deploy_rate_limiter(rate_limiter_rx)),
-                tokio::spawn(deploy_config_mgr(config_mgr_rx, rate_limiter_tx.clone())),
-                tokio::spawn(deploy_mgt_server(8888, config_mgr_tx.clone())),
-                tokio::spawn(deploy_reverse_proxy(
+            tokio::select!(
+                _ = tokio::spawn(deploy_rate_limiter(rate_limiter_rx)) => 0,
+                _ = tokio::spawn(deploy_config_mgr(config_mgr_rx, rate_limiter_tx.clone())) => 0,
+                _ = tokio::spawn(deploy_mgt_server(8888, config_mgr_tx.clone())) => 0,
+                _ = tokio::spawn(deploy_reverse_proxy(
                     8080,
                     config_mgr_tx.clone(),
                     rate_limiter_tx.clone()
-                ))
+                )) => 0
             );
         });
 }
