@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::num::NonZeroU32;
 
 use governor::clock::DefaultClock;
 use governor::state::{InMemoryState, NotKeyed};
@@ -6,7 +7,16 @@ use governor::{Quota, RateLimiter};
 use nonzero_ext::nonzero;
 use tokio::sync::mpsc::Receiver;
 
+use crate::configuration_reader::origin_def_reader::{RateLimiterConfig, TimeUnit};
 use crate::RateLimiterAPI;
+
+fn calculate_rps(rate_limiter_config: RateLimiterConfig) -> u32 {
+    match rate_limiter_config.time_unit {
+        TimeUnit::Second => rate_limiter_config.req_per_time_unit,
+        TimeUnit::Minute => (rate_limiter_config.req_per_time_unit as f32 / 60.0f32).ceil() as u32,
+        TimeUnit::Hour => (rate_limiter_config.req_per_time_unit as f32 / 3600.0f32).ceil() as u32,
+    }
+}
 
 pub(crate) async fn deploy_rate_limiter(mut receiver: Receiver<RateLimiterAPI>) {
     let mut api_rate_limiter_map =
@@ -29,6 +39,23 @@ pub(crate) async fn deploy_rate_limiter(mut receiver: Receiver<RateLimiterAPI>) 
                     }
                     Some(rate_limiter) => {
                         responder.send(rate_limiter.check().map_err(|err| ()));
+                    }
+                },
+                RateLimiterAPI::UpdateOriginSpecification {
+                    origin_id,
+                    rate_limiter_spec,
+                } => match NonZeroU32::new(calculate_rps(rate_limiter_spec)) {
+                    None => {
+                        api_rate_limiter_map.insert(
+                            origin_id,
+                            RateLimiter::direct(Quota::per_second(nonzero!(100u32))),
+                        );
+                    }
+                    Some(calculated_rps) => {
+                        api_rate_limiter_map.insert(
+                            origin_id,
+                            RateLimiter::direct(Quota::per_second(calculated_rps)),
+                        );
                     }
                 },
             }

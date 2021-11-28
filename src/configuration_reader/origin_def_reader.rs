@@ -3,6 +3,7 @@ use serde_json;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TimeUnit {
+    Hour,
     Minute,
     Second,
 }
