@@ -23,10 +23,17 @@ echo "Build mode: $BUILD_MODE"
 BASE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 echo "Base directory: $BASE_DIR"
 
-/bin/bash -c "cd $BASE_DIR && $CARGO_LOC fmt" >"$BASE_DIR"/build.log 2>&1
-/bin/bash -c "cd $BASE_DIR && $CARGO_LOC build $CARGO_BUILD_FLAG" >"$BASE_DIR"/build.log 2>&1
+/bin/bash -c "cd $BASE_DIR && $CARGO_LOC fmt" > "$BASE_DIR"/build.log 2>&1
+/bin/bash -c "cd $BASE_DIR && $CARGO_LOC build $CARGO_BUILD_FLAG" > "$BASE_DIR"/build.log 2>&1
 
 mkdir -p "$BASE_DIR"/build
+mkdir -p "$BASE_DIR"/build/resources/definitions
 cp -vf "$BASE_DIR"/target/"$BUILD_MODE"/Gateman "$BASE_DIR"/build/
 chmod go-rwx "$BASE_DIR"/build/Gateman
 chmod ug+rx "$BASE_DIR"/build/Gateman
+cp -rvf "$BASE_DIR"/resources/definitions/api_def "$BASE_DIR"/build/resources/definitions/
+cp -rvf "$BASE_DIR"/resources/definitions/origin_def "$BASE_DIR"/build/resources/definitions/
+
+if [ "$BUILD_MODE" == "release" ]; then
+  rm -rf "$BASE_DIR"/target
+fi
