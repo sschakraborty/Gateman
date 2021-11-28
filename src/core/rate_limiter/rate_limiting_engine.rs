@@ -10,21 +10,32 @@ use tokio::sync::mpsc::Receiver;
 use crate::configuration_reader::origin_def_reader::{RateLimiterConfig, TimeUnit};
 use crate::RateLimiterAPI;
 
-fn calculate_rps(rate_limiter_config: RateLimiterConfig) -> u32 {
+fn create_non_zero_u32_from_u32(input: u32) -> NonZeroU32 {
+    match NonZeroU32::new(input) {
+        None => {
+            nonzero!(100u32)
+        }
+        Some(parsed) => parsed,
+    }
+}
+
+fn calculate_quota(rate_limiter_config: RateLimiterConfig) -> Quota {
     match rate_limiter_config.time_unit {
-        TimeUnit::Second => rate_limiter_config.req_per_time_unit,
-        TimeUnit::Minute => (rate_limiter_config.req_per_time_unit as f32 / 60.0f32).ceil() as u32,
-        TimeUnit::Hour => (rate_limiter_config.req_per_time_unit as f32 / 3600.0f32).ceil() as u32,
+        TimeUnit::Hour => Quota::per_hour(create_non_zero_u32_from_u32(
+            rate_limiter_config.req_per_time_unit,
+        )),
+        TimeUnit::Minute => Quota::per_minute(create_non_zero_u32_from_u32(
+            rate_limiter_config.req_per_time_unit,
+        )),
+        TimeUnit::Second => Quota::per_second(create_non_zero_u32_from_u32(
+            rate_limiter_config.req_per_time_unit,
+        )),
     }
 }
 
 pub(crate) async fn deploy_rate_limiter(mut receiver: Receiver<RateLimiterAPI>) {
     let mut api_rate_limiter_map =
         HashMap::<String, RateLimiter<NotKeyed, InMemoryState, DefaultClock>>::new();
-    api_rate_limiter_map.insert(
-        String::from("RFX829635"),
-        RateLimiter::direct(Quota::per_second(nonzero!(5u32))),
-    );
     loop {
         let api_call = receiver.recv().await;
         if api_call.is_some() {
@@ -44,20 +55,12 @@ pub(crate) async fn deploy_rate_limiter(mut receiver: Receiver<RateLimiterAPI>) 
                 RateLimiterAPI::UpdateOriginSpecification {
                     origin_id,
                     rate_limiter_spec,
-                } => match NonZeroU32::new(calculate_rps(rate_limiter_spec)) {
-                    None => {
-                        api_rate_limiter_map.insert(
-                            origin_id,
-                            RateLimiter::direct(Quota::per_second(nonzero!(100u32))),
-                        );
-                    }
-                    Some(calculated_rps) => {
-                        api_rate_limiter_map.insert(
-                            origin_id,
-                            RateLimiter::direct(Quota::per_second(calculated_rps)),
-                        );
-                    }
-                },
+                } => {
+                    api_rate_limiter_map.insert(
+                        origin_id,
+                        RateLimiter::direct(calculate_quota(rate_limiter_spec)),
+                    );
+                }
             }
         }
     }
