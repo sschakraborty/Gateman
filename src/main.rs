@@ -9,9 +9,11 @@ use crate::core::reverse_proxy::{deploy_mgt_server, deploy_reverse_proxy};
 mod configuration_reader;
 mod core;
 mod file_utils;
+mod utils;
 
 #[allow(unused_must_use)]
 fn main() {
+    log4rs::init_file("logging.yml", Default::default()).unwrap();
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()

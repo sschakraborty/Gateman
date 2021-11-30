@@ -1,16 +1,10 @@
-use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::configuration_reader::api_def_reader::APIDefinition;
 use crate::configuration_reader::origin_def_reader::Origin;
 use crate::file_utils::file_reader::FileReader;
-
-fn get_directory_of_executable() -> PathBuf {
-    let mut executable_path = env::current_exe().unwrap();
-    assert_eq!(true, executable_path.pop());
-    executable_path
-}
+use crate::utils::path_utils::get_directory_of_executable;
 
 fn read_config_file_paths(current_directory: PathBuf) -> Vec<PathBuf> {
     let dir_traversal_result = fs::read_dir(current_directory.clone());
