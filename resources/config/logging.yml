@@ -4,7 +4,7 @@ appenders:
         kind: console
     requests:
         kind: file
-        path: "log/admin.log"
+        path: "resources/log/admin.log"
         encoder:
             pattern: "{d} - {m}{n}"
 root:
