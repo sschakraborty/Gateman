@@ -139,12 +139,29 @@ fn get_origin_def_by_id(
     responder: Sender<Option<Origin>>,
     origin_definitions: Arc<HashMap<String, Origin>>,
 ) {
-    responder.send(
+    trace!(
+        "Received call for fetching Origin definition by ID (Origin ID: {})",
+        origin_id
+    );
+    match responder.send(
         origin_definitions
             .as_ref()
             .get(&*origin_id)
             .map(|origin| origin.clone()),
-    );
+    ) {
+        Ok(_) => {
+            trace!(
+                "Configuration manager successfully responded to call for fetching Origin definition by ID (Origin ID: {})",
+                origin_id
+            )
+        }
+        Err(_) => {
+            trace!(
+                "Configuration manager failed to respond to call for fetching Origin definition by ID (Origin ID: {})",
+                origin_id
+            )
+        }
+    }
 }
 
 pub(crate) async fn deploy_config_mgr(
