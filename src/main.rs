@@ -5,6 +5,7 @@ use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
 use crate::core::rate_limiter::rate_limiter_api::RateLimiterAPI;
 use crate::core::rate_limiter::rate_limiting_engine::deploy_rate_limiter;
 use crate::core::reverse_proxy::{deploy_mgt_server, deploy_reverse_proxy};
+use crate::utils::path_utils::get_directory_of_executable;
 
 mod configuration_reader;
 mod core;
@@ -13,7 +14,11 @@ mod utils;
 
 #[allow(unused_must_use)]
 fn main() {
-    log4rs::init_file("logging.yml", Default::default()).unwrap();
+    log4rs::init_file(
+        get_directory_of_executable().join("resources/config/logging.yml"),
+        Default::default(),
+    )
+    .unwrap();
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()

@@ -33,6 +33,7 @@ chmod go-rwx "$BASE_DIR"/build/Gateman
 chmod ug+rx "$BASE_DIR"/build/Gateman
 cp -rvf "$BASE_DIR"/resources/definitions/api_def "$BASE_DIR"/build/resources/definitions/
 cp -rvf "$BASE_DIR"/resources/definitions/origin_def "$BASE_DIR"/build/resources/definitions/
+cp -rvf "$BASE_DIR"/resources/config "$BASE_DIR"/build/resources/config
 
 if [ "$BUILD_MODE" == "release" ]; then
   rm -rf "$BASE_DIR"/target
