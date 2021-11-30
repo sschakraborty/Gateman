@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use log::{debug, info, trace};
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::oneshot::Sender;
 
@@ -13,13 +14,36 @@ async fn send_origin_definitions_to_rate_limiter(
     rate_limiter_tx: tokio::sync::mpsc::Sender<RateLimiterAPI>,
     origin_definitions: &Vec<Origin>,
 ) {
+    debug!(
+        "Sending {} origin definitions to rate limiter",
+        origin_definitions.len()
+    );
     for origin_def in origin_definitions {
-        rate_limiter_tx
+        trace!(
+            "Sending origin definition (Origin ID: {}) to rate limiter",
+            origin_def.origin_id
+        );
+        match rate_limiter_tx
             .send(RateLimiterAPI::UpdateOriginSpecification {
                 origin_id: origin_def.origin_id.clone(),
                 rate_limiter_spec: origin_def.specification.rate_limiter.clone(),
             })
-            .await;
+            .await
+        {
+            Err(error) => {
+                trace!(
+                    "Failed to send origin definition (Origin ID: {}) to rate limiter as {}",
+                    origin_def.origin_id,
+                    error
+                );
+            }
+            Ok(_) => {
+                trace!(
+                    "Sent origin definition (Origin ID: {}) to rate limiter",
+                    origin_def.origin_id
+                );
+            }
+        }
     }
 }
 
@@ -27,7 +51,17 @@ async fn initialize(
     rate_limiter_tx: tokio::sync::mpsc::Sender<RateLimiterAPI>,
 ) -> (HashMap<String, APIDefinition>, HashMap<String, Origin>) {
     let api_definitions = read_all_api_definitions();
+    debug!(
+        "Configuration manager read {} api definitions",
+        api_definitions.len()
+    );
+
     let origin_definitions = read_all_origin_definitions();
+    debug!(
+        "Configuration manager read {} origin definitions",
+        origin_definitions.len()
+    );
+
     let mut api_def_map = HashMap::new();
     let mut origin_def_map = HashMap::new();
     send_origin_definitions_to_rate_limiter(rate_limiter_tx, &origin_definitions).await;
@@ -101,12 +135,22 @@ pub(crate) async fn deploy_config_mgr(
     mut receiver: Receiver<ConfigMgrProxyAPI>,
     rate_limiter_tx: tokio::sync::mpsc::Sender<RateLimiterAPI>,
 ) {
+    info!("Deploying configuration manager");
     let (api_definitions, origin_definitions) = initialize(rate_limiter_tx).await;
     let api_definitions = Arc::new(api_definitions);
     let origin_definitions = Arc::new(origin_definitions);
+    debug!(
+        "Configuration manager read {} APIDefinition objects",
+        api_definitions.as_ref().len()
+    );
+    debug!(
+        "Configuration manager read {} Origin objects",
+        origin_definitions.as_ref().len()
+    );
     loop {
         let api_call = receiver.recv().await;
         if api_call.is_some() {
+            trace!("Configuration manager received API call");
             let api_call = api_call.unwrap();
             let api_definitions = api_definitions.clone();
             let origin_definitions = origin_definitions.clone();
@@ -115,11 +159,17 @@ pub(crate) async fn deploy_config_mgr(
                     ConfigMgrProxyAPI::GetAPIDefinitionBySpecification {
                         specification,
                         responder,
-                    } => get_api_def_by_specification(specification, responder, api_definitions),
+                    } => {
+                        trace!("Configuration manager received call for getting API definition by specification");
+                        get_api_def_by_specification(specification, responder, api_definitions)
+                    }
                     ConfigMgrProxyAPI::GetOriginDefinitionByID {
                         origin_id,
                         responder,
-                    } => get_origin_def_by_id(origin_id, responder, origin_definitions),
+                    } => {
+                        trace!("Configuration manager received call for getting Origin by ID");
+                        get_origin_def_by_id(origin_id, responder, origin_definitions)
+                    }
                 }
             });
         }

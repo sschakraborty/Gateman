@@ -1,3 +1,4 @@
+use log::{debug, trace};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -20,18 +21,29 @@ pub struct APIDefinition {
 
 impl APIDefinition {
     pub fn from_json_string(json_payload: &String) -> Result<Self, serde_json::Error> {
+        debug!("Constructing APIDefinition from JSON payload!");
+        trace!("Trying to create APIDefinition from {}", json_payload);
         serde_json::from_str::<Self>(json_payload.as_str())
     }
     pub fn from_json_str_slice(json_payload: &str) -> Result<Self, serde_json::Error> {
+        debug!("Constructing APIDefinition from JSON payload!");
+        trace!("Trying to create APIDefinition from {}", json_payload);
         serde_json::from_str::<Self>(json_payload)
     }
     pub fn to_json(&self) -> Result<String, serde_json::Error> {
+        debug!("Serializing APIDefinition to JSON!");
         serde_json::to_string(self)
     }
     pub fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
+        debug!("Serializing APIDefinition to pretty JSON!");
         serde_json::to_string_pretty(self)
     }
     pub fn origin_id(&self) -> String {
+        trace!(
+            "Fetching Origin ID for APIDefinition (APIDefinition ID: {}, Origin ID: {})",
+            self.api_id,
+            self.origin_id
+        );
         self.origin_id.clone()
     }
 }

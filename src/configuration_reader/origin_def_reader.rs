@@ -1,3 +1,4 @@
+use log::{debug, trace};
 use serde::{Deserialize, Serialize};
 use serde_json;
 
@@ -38,18 +39,25 @@ pub struct Origin {
 
 impl Origin {
     pub fn from_json_string(json_payload: &String) -> Result<Self, serde_json::Error> {
+        debug!("Constructing Origin from JSON payload!");
+        trace!("Trying to create Origin from {}", json_payload);
         serde_json::from_str::<Self>(json_payload.as_str())
     }
     pub fn from_json_str_slice(json_payload: &str) -> Result<Self, serde_json::Error> {
+        debug!("Constructing Origin from JSON payload!");
+        trace!("Trying to create Origin from {}", json_payload);
         serde_json::from_str::<Self>(json_payload)
     }
     pub fn to_json(&self) -> Result<String, serde_json::Error> {
+        debug!("Serializing Origin to JSON!");
         serde_json::to_string(self)
     }
     pub fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
+        debug!("Serializing Origin to pretty JSON!");
         serde_json::to_string_pretty(self)
     }
     pub fn has_id(&self, origin_id: &String) -> bool {
+        trace!("Checking id Origin ID matches (Origin ID: {})", origin_id);
         self.origin_id.eq(origin_id)
     }
 }
