@@ -1,3 +1,4 @@
+use log::info;
 use tokio::sync::mpsc;
 
 use crate::core::config::config_mgr::deploy_config_mgr;
@@ -18,7 +19,8 @@ fn main() {
         get_directory_of_executable().join("resources/config/logging.yml"),
         Default::default(),
     )
-    .unwrap();
+        .unwrap();
+    info!("Starting executor runtime");
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
