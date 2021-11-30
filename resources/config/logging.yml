@@ -2,20 +2,18 @@ refresh_rate: 30 seconds
 appenders:
     stdout:
         kind: console
-    requests:
+    admin_log:
         kind: file
         path: "resources/log/admin.log"
         encoder:
             pattern: "{d} - {m}{n}"
 root:
-    level: warn
+    level: info
     appenders:
-        - stdout
+        - admin_log
 loggers:
-    app::backend::db:
-        level: info
-    app::requests:
+    app::stdout:
         level: info
         appenders:
-            - requests
+            - stdout
         additive: false
