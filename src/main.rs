@@ -20,6 +20,7 @@ fn main() {
         Default::default(),
     )
     .unwrap();
+    info!("--- Starting ---");
     info!("Starting executor runtime");
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -39,4 +40,6 @@ fn main() {
                 )) => 0
             );
         });
+    info!("Stopped executor runtime");
+    info!("--- Stopped ---");
 }

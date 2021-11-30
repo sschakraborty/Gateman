@@ -1,3 +1,4 @@
+use log::error;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -23,13 +24,13 @@ fn read_config_file_paths(current_directory: PathBuf) -> Vec<PathBuf> {
                         }
                     }
                     Err(e) => {
-                        eprintln!("Failed to read file {}!", e);
+                        error!("Failed to read file {}!", e);
                     }
                 }
             }
         }
         Err(e) => {
-            eprintln!(
+            error!(
                 "Failed to read the directory at {} because {}!",
                 current_directory.to_str().unwrap(),
                 e
@@ -53,7 +54,7 @@ pub fn read_all_api_definitions() -> Vec<APIDefinition> {
                         api_definitions.push(api_definition);
                     }
                     Err(e) => {
-                        eprintln!(
+                        error!(
                             "Failed to parse JSON content in file {} as APIDefinition because {}",
                             path_buffer.to_str().unwrap(),
                             e
@@ -62,7 +63,7 @@ pub fn read_all_api_definitions() -> Vec<APIDefinition> {
                 }
             }
             Err(e) => {
-                eprintln!(
+                error!(
                     "Failed to read file at {} because {}!",
                     path_buffer.to_str().unwrap(),
                     e.message
@@ -87,7 +88,7 @@ pub fn read_all_origin_definitions() -> Vec<Origin> {
                         origin_definitions.push(origin_definition);
                     }
                     Err(e) => {
-                        eprintln!(
+                        error!(
                             "Failed to parse JSON content in file {} as Origin because {}",
                             path_buffer.to_str().unwrap(),
                             e
@@ -96,7 +97,7 @@ pub fn read_all_origin_definitions() -> Vec<Origin> {
                 }
             }
             Err(e) => {
-                eprintln!(
+                error!(
                     "Failed to read file at {} because {}!",
                     path_buffer.to_str().unwrap(),
                     e.message

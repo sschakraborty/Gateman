@@ -3,6 +3,7 @@ use std::net::SocketAddr;
 
 use hyper::service::{make_service_fn, service_fn};
 use hyper::Server;
+use log::{debug, error, info};
 use tokio::sync::mpsc::Sender;
 
 use crate::core::router::{route_mgt_server, route_proxy_server};
@@ -18,6 +19,7 @@ pub async fn deploy_mgt_server(
     port: u16,
     config_mgr_tx: Sender<ConfigMgrProxyAPI>,
 ) -> hyper::Result<()> {
+    info!("Deploying management server");
     let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
     let make_svc_metadata = make_service_fn(move |_| {
         let config_mgr_tx = config_mgr_tx.clone();
@@ -33,8 +35,9 @@ pub async fn deploy_mgt_server(
     let result = graceful.await;
 
     if let Err(e) = result.as_ref() {
-        eprintln!("Management server error: {}", e);
+        error!("Management server error: {}", e);
     }
+    debug!("Management server exited");
     result
 }
 
@@ -43,6 +46,7 @@ pub async fn deploy_reverse_proxy(
     config_mgr_tx: Sender<ConfigMgrProxyAPI>,
     rate_limiter_tx: Sender<RateLimiterAPI>,
 ) -> hyper::Result<()> {
+    info!("Deploying reverse proxy server");
     let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
     let make_svc_metadata = make_service_fn(move |_| {
         let rate_limiter_tx = rate_limiter_tx.clone();
@@ -59,7 +63,8 @@ pub async fn deploy_reverse_proxy(
     let result = graceful.await;
 
     if let Err(e) = result.as_ref() {
-        eprintln!("Proxy server error: {}", e);
+        error!("Proxy server error: {}", e);
     }
+    debug!("Reverse proxy server exited");
     result
 }
