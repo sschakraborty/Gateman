@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use hyper::header::{HeaderValue, CONTENT_TYPE};
 use hyper::{Body, Client, Method, Request, Response, Uri};
+use log::trace;
 use rand::Rng;
 use tokio::sync::mpsc::Sender;
 use tokio::time::timeout;
@@ -31,10 +32,23 @@ async fn process_request_to_origin(
 ) -> Result<Response<Body>, Infallible> {
     let (responder, receiver) = tokio::sync::oneshot::channel();
     let rate_limit_check_call = ShouldProgress {
-        origin_id: origin_definition.origin_id,
+        origin_id: origin_definition.origin_id.clone(),
         responder,
     };
-    rate_limiter_tx.send(rate_limit_check_call).await;
+    match rate_limiter_tx.send(rate_limit_check_call).await {
+        Ok(_) => {
+            trace!(
+                "Successfully queried rate limiter for Origin (Origin ID: {})",
+                origin_definition.origin_id
+            )
+        }
+        Err(_) => {
+            trace!(
+                "Failed to query rate limiter for Origin (Origin ID: {})",
+                origin_definition.origin_id
+            )
+        }
+    }
     let rate_limit_check_response = receiver.await;
     match rate_limit_check_response {
         Ok(rate_limit_check) => match rate_limit_check {

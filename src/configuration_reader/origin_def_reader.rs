@@ -56,10 +56,6 @@ impl Origin {
         debug!("Serializing Origin to pretty JSON!");
         serde_json::to_string_pretty(self)
     }
-    pub fn has_id(&self, origin_id: &String) -> bool {
-        trace!("Checking id Origin ID matches (Origin ID: {})", origin_id);
-        self.origin_id.eq(origin_id)
-    }
 }
 
 #[cfg(test)]

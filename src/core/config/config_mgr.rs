@@ -108,13 +108,29 @@ fn get_api_def_by_specification(
         }
     }
     if matching_hostname_api_def_vec.is_empty() {
-        responder.send(Option::None);
+        trace!("No APIDefinition matched the queried specification");
+        match responder.send(Option::None) {
+            Ok(_) => {
+                trace!("Configuration manager responded successfully to query to get APIDefinition by specification")
+            }
+            Err(_) => {
+                trace!("Configuration manager failed to respond to query to get APIDefinition by specification")
+            }
+        }
     } else {
-        responder.send(
+        trace!("One or more APIDefinition(s) matched with the queried specification");
+        match responder.send(
             matching_hostname_api_def_vec
                 .pop()
                 .map(|def_ref| def_ref.clone()),
-        );
+        ) {
+            Ok(_) => {
+                trace!("Configuration manager responded successfully to query to get APIDefinition by specification")
+            }
+            Err(_) => {
+                trace!("Configuration manager failed to respond to query to get APIDefinition by specification")
+            }
+        }
     }
 }
 

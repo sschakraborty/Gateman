@@ -4,6 +4,7 @@ use std::num::NonZeroU32;
 use governor::clock::DefaultClock;
 use governor::state::{InMemoryState, NotKeyed};
 use governor::{Quota, RateLimiter};
+use log::{debug, trace};
 use nonzero_ext::nonzero;
 use tokio::sync::mpsc::Receiver;
 
@@ -46,10 +47,34 @@ pub(crate) async fn deploy_rate_limiter(mut receiver: Receiver<RateLimiterAPI>) 
                     responder,
                 } => match api_rate_limiter_map.get(&*origin_id) {
                     None => {
-                        responder.send(Result::Err(()));
+                        debug!(
+                            "No rate limiter found for Origin (Origin ID: {})",
+                            origin_id
+                        );
+                        match responder.send(Result::Err(())) {
+                            Ok(_) => {
+                                trace!("Rate limiter responded successfully for Origin (Origin ID: {})", origin_id)
+                            }
+                            Err(_) => {
+                                trace!(
+                                    "Rate limiter failed to respond for Origin (Origin ID: {})",
+                                    origin_id
+                                )
+                            }
+                        }
                     }
                     Some(rate_limiter) => {
-                        responder.send(rate_limiter.check().map_err(|err| ()));
+                        match responder.send(rate_limiter.check().map_err(|_| ())) {
+                            Ok(_) => {
+                                trace!("Rate limiter responded successfully for Origin (Origin ID: {})", origin_id)
+                            }
+                            Err(_) => {
+                                trace!(
+                                    "Rate limiter failed to respond for Origin (Origin ID: {})",
+                                    origin_id
+                                )
+                            }
+                        }
                     }
                 },
                 RateLimiterAPI::UpdateOriginSpecification {
@@ -57,8 +82,12 @@ pub(crate) async fn deploy_rate_limiter(mut receiver: Receiver<RateLimiterAPI>) 
                     rate_limiter_spec,
                 } => {
                     api_rate_limiter_map.insert(
-                        origin_id,
+                        origin_id.clone(),
                         RateLimiter::direct(calculate_quota(rate_limiter_spec)),
+                    );
+                    debug!(
+                        "Origin specification updated in rate limiter for Origin (Origin ID: {})",
+                        origin_id
                     );
                 }
             }
