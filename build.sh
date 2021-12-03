@@ -28,12 +28,14 @@ echo "Base directory: $BASE_DIR"
 
 rm -rf "$BASE_DIR"/build
 mkdir -p "$BASE_DIR"/build/resources/definitions
+mkdir -p "$BASE_DIR"/build/resources/certs/proxy
 cp -vf "$BASE_DIR"/target/"$BUILD_MODE"/Gateman "$BASE_DIR"/build/
 chmod go-rwx "$BASE_DIR"/build/Gateman
 chmod ug+rx "$BASE_DIR"/build/Gateman
 cp -rvf "$BASE_DIR"/resources/definitions/api_def "$BASE_DIR"/build/resources/definitions/
 cp -rvf "$BASE_DIR"/resources/definitions/origin_def "$BASE_DIR"/build/resources/definitions/
 cp -rvf "$BASE_DIR"/resources/config "$BASE_DIR"/build/resources/config
+cp -rvf "$BASE_DIR"/resources/scripts/cert/* "$BASE_DIR"/build/resources/certs/proxy
 
 if [ "$BUILD_MODE" == "release" ]; then
   rm -rf "$BASE_DIR"/target

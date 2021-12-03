@@ -6,6 +6,7 @@ use crate::core::config::config_mgr_proxy_api::ConfigMgrProxyAPI;
 use crate::core::rate_limiter::rate_limiter_api::RateLimiterAPI;
 use crate::core::rate_limiter::rate_limiting_engine::deploy_rate_limiter;
 use crate::core::reverse_proxy::{deploy_mgt_server, deploy_reverse_proxy};
+use crate::core::tls_reverse_proxy::deploy_tls_reverse_proxy;
 use crate::utils::path_utils::get_directory_of_executable;
 
 mod configuration_reader;
@@ -37,7 +38,12 @@ fn main() {
                     8080,
                     config_mgr_tx.clone(),
                     rate_limiter_tx.clone()
-                )) => 0
+                )) => 0,
+                _ = tokio::spawn(deploy_tls_reverse_proxy(
+                    8443,
+                    config_mgr_tx.clone(),
+                    rate_limiter_tx.clone()
+                )) => 0,
             );
         });
     info!("Stopped executor runtime");
