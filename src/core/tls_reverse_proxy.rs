@@ -120,10 +120,9 @@ pub async fn deploy_tls_reverse_proxy(
                         trace!("Error during TLS handshake - {}", error);
                         error
                     });
-                    if tls_accept_result.is_err() {
-                        continue;
+                    if tls_accept_result.is_ok() {
+                        yield tls_accept_result;
                     }
-                    yield tls_accept_result;
                 }
                 Err(error) => {
                     trace!("Error accepting TCP connection - {}", error);
