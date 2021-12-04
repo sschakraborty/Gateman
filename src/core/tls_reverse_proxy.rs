@@ -62,88 +62,99 @@ fn load_certs(filename: &str) -> Result<Vec<Certificate>, Error> {
     }
 }
 
+fn create_tls_config() -> Option<Arc<ServerConfig>> {
+    match load_certs("resources/certs/proxy/certificate.crt") {
+        Ok(certs) => match load_private_key("resources/certs/proxy/private.key") {
+            Ok(key) => {
+                let config = ServerConfig::builder()
+                    .with_safe_defaults()
+                    .with_no_client_auth()
+                    .with_single_cert(certs, key);
+                match config {
+                    Ok(mut config) => {
+                        config.alpn_protocols = vec![b"http/1.1".to_vec()];
+                        Some(Arc::new(config))
+                    }
+                    Err(error) => {
+                        error!("Could not read or validate TLS configuration - {}", error);
+                        None
+                    }
+                }
+            }
+            Err(error) => {
+                error!("Could not load private key - {}", error);
+                None
+            }
+        },
+        Err(error) => {
+            error!("Could not load TLS certificate chain - {}", error);
+            None
+        }
+    }
+}
+
 pub async fn deploy_tls_reverse_proxy(
     port: u16,
     config_mgr_tx: Sender<ConfigMgrProxyAPI>,
     rate_limiter_tx: Sender<RateLimiterAPI>,
-) -> hyper::Result<()> {
+) {
     info!("Deploying TLS reverse proxy server");
-    let tls_configuration = {
-        match load_certs("resources/certs/proxy/certificate.crt") {
-            Ok(certs) => match load_private_key("resources/certs/proxy/private.key") {
-                Ok(key) => {
-                    let cfg = ServerConfig::builder()
-                        .with_safe_defaults()
-                        .with_no_client_auth()
-                        .with_single_cert(certs, key);
-                    match cfg {
-                        Ok(mut cfg) => {
-                            cfg.alpn_protocols = vec![b"http/1.1".to_vec()];
-                            Arc::new(cfg)
-                        }
-                        Err(error) => {
-                            error!("Could not read or validate TLS configuration - {}", error);
-                            panic!("{}", error);
-                        }
-                    }
-                }
-                Err(error) => {
-                    error!("Could not load private key - {}", error);
-                    panic!("{}", error);
-                }
-            },
-            Err(error) => {
-                error!("Could not load TLS certificate chain - {}", error);
-                panic!("{}", error);
-            }
+    match create_tls_config() {
+        None => {
+            error!("TLS configuration creation failed. Exiting TLS reverse proxy");
         }
-    };
-    let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
-    let tcp = match TcpListener::bind(frontend_server_address).await {
-        Ok(tcp) => tcp,
-        Err(error) => {
-            error!("TLS server could not be bound to port {} - {}", port, error);
-            panic!("{}", error);
-        }
-    };
-    let tls_acceptor = TlsAcceptor::from(tls_configuration);
-    let accept_stream = hyper::server::accept::from_stream(stream! {
-        use log::trace;
-        loop {
-            match tcp.accept().await {
-                Ok((socket, _)) => {
-                    let tls_accept_result = tls_acceptor.accept(socket).await;
-                    let tls_accept_result = tls_accept_result.map_err(|error| {
-                        trace!("Error during TLS handshake - {}", error);
-                        error
+        Some(tls_configuration) => {
+            let frontend_server_address = SocketAddr::from(([127, 0, 0, 1], port));
+            match TcpListener::bind(frontend_server_address).await {
+                Ok(tcp) => {
+                    let tls_acceptor = TlsAcceptor::from(tls_configuration);
+                    let accept_stream = hyper::server::accept::from_stream(stream! {
+                        use log::trace;
+                        loop {
+                            match tcp.accept().await {
+                                Ok((socket, _)) => {
+                                    let tls_accept_result = tls_acceptor.accept(socket).await;
+                                    let tls_accept_result = tls_accept_result.map_err(|error| {
+                                        trace!("Error during TLS handshake - {}", error);
+                                        error
+                                    });
+                                    if tls_accept_result.is_ok() {
+                                        yield tls_accept_result;
+                                    }
+                                }
+                                Err(error) => {
+                                    trace!("Error accepting TCP connection - {}", error);
+                                }
+                            }
+                        }
                     });
-                    if tls_accept_result.is_ok() {
-                        yield tls_accept_result;
+                    let make_svc_metadata = make_service_fn(move |_| {
+                        let rate_limiter_tx = rate_limiter_tx.clone();
+                        let config_mgr_tx = config_mgr_tx.clone();
+                        async move {
+                            Ok::<_, Infallible>(service_fn(move |request| {
+                                route_proxy_server(
+                                    request,
+                                    config_mgr_tx.clone(),
+                                    rate_limiter_tx.clone(),
+                                )
+                            }))
+                        }
+                    });
+
+                    let server = Server::builder(accept_stream).serve(make_svc_metadata);
+                    let graceful = server.with_graceful_shutdown(ctrl_c_shutdown_signal());
+                    let result = graceful.await;
+
+                    if let Err(e) = result.as_ref() {
+                        error!("TLS proxy server error: {}", e);
                     }
                 }
                 Err(error) => {
-                    trace!("Error accepting TCP connection - {}", error);
+                    error!("TLS server could not be bound to port {} - {}", port, error);
                 }
             }
         }
-    });
-    let make_svc_metadata = make_service_fn(move |_| {
-        let rate_limiter_tx = rate_limiter_tx.clone();
-        let config_mgr_tx = config_mgr_tx.clone();
-        async move {
-            Ok::<_, Infallible>(service_fn(move |request| {
-                route_proxy_server(request, config_mgr_tx.clone(), rate_limiter_tx.clone())
-            }))
-        }
-    });
-
-    let server = Server::builder(accept_stream).serve(make_svc_metadata);
-    let graceful = server.with_graceful_shutdown(ctrl_c_shutdown_signal());
-    let result = graceful.await;
-
-    if let Err(e) = result.as_ref() {
-        error!("Proxy server error: {}", e);
     }
-    debug!("Reverse proxy server exited");
-    result
+    debug!("TLS reverse proxy server exited");
 }
