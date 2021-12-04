@@ -25,14 +25,14 @@ fn read_config_file_paths(current_directory: PathBuf) -> Vec<PathBuf> {
                         }
                     }
                     Err(e) => {
-                        error!("Failed to read file {}!", e);
+                        error!("Failed to read file {}", e);
                     }
                 }
             }
         }
         Err(e) => {
             error!(
-                "Failed to read the directory at {} because {}!",
+                "Failed to read the directory at {} - {}",
                 current_directory.to_str().unwrap(),
                 e
             );
@@ -56,7 +56,7 @@ pub fn read_all_api_definitions() -> Vec<APIDefinition> {
                     }
                     Err(e) => {
                         error!(
-                            "Failed to parse JSON content in file {} as APIDefinition because {}",
+                            "Failed to parse JSON content in file {} as APIDefinition - {}",
                             path_buffer.to_str().unwrap(),
                             e
                         );
@@ -65,7 +65,7 @@ pub fn read_all_api_definitions() -> Vec<APIDefinition> {
             }
             Err(e) => {
                 error!(
-                    "Failed to read file at {} because {}!",
+                    "Failed to read file at {} - {}",
                     path_buffer.to_str().unwrap(),
                     e.message
                 );
@@ -90,7 +90,7 @@ pub fn read_all_origin_definitions() -> Vec<Origin> {
                     }
                     Err(e) => {
                         error!(
-                            "Failed to parse JSON content in file {} as Origin because {}",
+                            "Failed to parse JSON content in file {} as Origin - {}",
                             path_buffer.to_str().unwrap(),
                             e
                         );
@@ -99,7 +99,7 @@ pub fn read_all_origin_definitions() -> Vec<Origin> {
             }
             Err(e) => {
                 error!(
-                    "Failed to read file at {} because {}!",
+                    "Failed to read file at {} - {}",
                     path_buffer.to_str().unwrap(),
                     e.message
                 );

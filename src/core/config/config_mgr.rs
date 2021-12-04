@@ -32,7 +32,7 @@ async fn send_origin_definitions_to_rate_limiter(
         {
             Err(error) => {
                 trace!(
-                    "Failed to send origin definition (Origin ID: {}) to rate limiter as {}",
+                    "Failed to send origin definition (Origin ID: {}) to rate limiter - {}",
                     origin_def.origin_id,
                     error
                 );

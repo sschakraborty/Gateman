@@ -43,7 +43,7 @@ fn load_private_key(filename: &str) -> Result<PrivateKey, Error> {
             Ok(PrivateKey(keys[0].clone()))
         }
         Err(error) => {
-            error!("Failed to read TLS private key as {}", error);
+            error!("Failed to read TLS private key - {}", error);
             Err(error)
         }
     }
@@ -56,7 +56,7 @@ fn load_certs(filename: &str) -> Result<Vec<Certificate>, Error> {
     match certs {
         Ok(certs) => Ok(certs.into_iter().map(Certificate).collect()),
         Err(error) => {
-            error!("Failed to read TLS certificates as {}", error);
+            error!("Failed to read TLS certificates - {}", error);
             Err(error)
         }
     }
@@ -82,18 +82,18 @@ pub async fn deploy_tls_reverse_proxy(
                             Arc::new(cfg)
                         }
                         Err(error) => {
-                            error!("Could not read or validate TLS configuration as {}", error);
+                            error!("Could not read or validate TLS configuration - {}", error);
                             panic!("{}", error);
                         }
                     }
                 }
                 Err(error) => {
-                    error!("Could not load private key as {}", error);
+                    error!("Could not load private key - {}", error);
                     panic!("{}", error);
                 }
             },
             Err(error) => {
-                error!("Could not load TLS certificate chain as {}", error);
+                error!("Could not load TLS certificate chain - {}", error);
                 panic!("{}", error);
             }
         }
@@ -102,10 +102,7 @@ pub async fn deploy_tls_reverse_proxy(
     let tcp = match TcpListener::bind(frontend_server_address).await {
         Ok(tcp) => tcp,
         Err(error) => {
-            error!(
-                "TLS server could not be bound to port {} as {}",
-                port, error
-            );
+            error!("TLS server could not be bound to port {} - {}", port, error);
             panic!("{}", error);
         }
     };
