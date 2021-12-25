@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use glob::Pattern;
 use log::{debug, info, trace};
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::oneshot::Sender;
@@ -80,13 +81,23 @@ fn get_api_def_by_specification(
     api_definitions: Arc<HashMap<String, APIDefinition>>,
 ) {
     let mut matching_path_api_def_vec: Vec<&APIDefinition> = vec![];
-    for api_definition in api_definitions.as_ref() {
-        let api_definition = api_definition.1;
+    for (_, api_definition) in api_definitions.as_ref() {
         let api_specification = &(api_definition.specification);
-        for query_path in &query_specification.paths {
-            for api_path in &api_specification.paths {
-                if query_path.starts_with(api_path) {
-                    matching_path_api_def_vec.push(api_definition);
+        for api_path in &api_specification.paths {
+            let pattern_result = Pattern::new(api_path);
+            match pattern_result {
+                Ok(pattern) => {
+                    for query_path in &query_specification.paths {
+                        if pattern.matches(query_path.as_str()) {
+                            matching_path_api_def_vec.push(api_definition);
+                        }
+                    }
+                }
+                Err(pattern_error) => {
+                    debug!(
+                        "Error while parsing path pattern in API definition (APIDefinition ID: {}) - {}",
+                        api_definition.api_id, pattern_error
+                    );
                 }
             }
         }
