@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
+use log::trace;
+
 use crate::file_utils::file_error::FileOperationError;
 
 pub(crate) struct FileReader {
@@ -18,8 +20,16 @@ impl FileReader {
         match File::open(Path::new(self.filepath.as_str())) {
             Ok(mut file) => {
                 let mut content = String::new();
-                file.read_to_string(&mut content);
-                Result::Ok(content)
+                let read_result = file.read_to_string(&mut content);
+                match read_result {
+                    Ok(read_bytes) => {
+                        trace!("Read {} bytes from file {}!", read_bytes, self.filepath);
+                        Result::Ok(content)
+                    }
+                    Err(reason) => Result::Err(FileOperationError {
+                        message: format!("Failed to read file because of {} reason", reason),
+                    }),
+                }
             }
             Err(reason) => Result::Err(FileOperationError {
                 message: format!("Failed to read file because of {} reason", reason),

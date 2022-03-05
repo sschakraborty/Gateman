@@ -16,10 +16,12 @@ impl FileWriter {
     }
     pub(crate) fn write(&self, content: &String) -> Result<(), FileOperationError> {
         match File::create(Path::new(self.filepath.as_str())) {
-            Ok(mut file) => {
-                file.write_all(content.as_bytes());
-                Result::Ok(())
-            }
+            Ok(mut file) => match file.write_all(content.as_bytes()) {
+                Ok(_) => Result::Ok(()),
+                Err(reason) => Result::Err(FileOperationError {
+                    message: format!("Failed to write to file because of {} reason", reason),
+                }),
+            },
             Err(reason) => Result::Err(FileOperationError {
                 message: format!("Failed to write to file because of {} reason", reason),
             }),
@@ -38,6 +40,7 @@ mod test {
         let filepath =
             "/home/sschakraborty/Projects/Gateman/resources/file_utils_test/SampleWrittenFile";
         let result = FileWriter::from_path(filepath).write(&test_payload);
+        assert_eq!(true, result.is_ok());
         let read_result = FileReader::from_path(filepath).read();
         match read_result {
             Ok(content) => {
