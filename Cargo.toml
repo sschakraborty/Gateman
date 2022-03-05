@@ -12,10 +12,10 @@ serde_json = { version = "1" }
 hyper = { version = "0.14", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
 tokio-rustls = { version = "0.23" }
-rustls-pemfile = "0.2.1"
-async-stream = "0.3.2"
-governor = { version = "0.3" }
+rustls-pemfile = "0.3"
+async-stream = "0.3"
+governor = { version = "0.4" }
 nonzero_ext = "0.3"
 log4rs = { version = "1" }
 log = { version = "0.4", features = ["std"] }
-glob = { version = "0.3.0" }
+glob = { version = "0.3" }
